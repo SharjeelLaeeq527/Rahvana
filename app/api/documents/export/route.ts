@@ -3,7 +3,6 @@
 // Supports: Export All, Export Single Document (original + compressed)
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 import { DocumentFileManager } from "@/lib/document-vault/storage-server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
@@ -11,19 +10,15 @@ import { getCategoryFolderName } from "@/lib/document-vault/file-utils";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import JSZip from "jszip";
 import crypto from "crypto";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 export async function GET(request: NextRequest) {
   try {
-    // Authenticate user
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
 
-    if (authError || !user) {
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    // Authenticate user
+    const { user, supabase } = sessionGuard.context;
 
     // Get query parameters
     const { searchParams } = new URL(request.url);

@@ -17,20 +17,15 @@ import { createClient } from "@/lib/supabase/server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { createClient as createClientJs } from "@supabase/supabase-js";
 import { decryptFile, isEncryptedFile } from "@/lib/document-vault/file-encryption";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // ── 1. Authenticate user ──────────────────────────────────────────────────
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      console.error("[download] Unauthorized:", authError);
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const { id } = await params;
 

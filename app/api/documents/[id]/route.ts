@@ -9,18 +9,14 @@ import { createClient } from "@/lib/supabase/server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { createClient as createClientJs } from "@supabase/supabase-js";
 import { E, msg } from "@/lib/errors";
+import { requireActiveSession } from "@/lib/security/session-guard";
 // GET - Get document metadata
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const { id } = await params;
     const documentId = id;
@@ -45,14 +41,9 @@ export async function DELETE(
 ) {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const { id } = await params;
     const documentId = id;
@@ -103,14 +94,9 @@ export async function DELETE(
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const { id } = await params;
     const documentId = id;

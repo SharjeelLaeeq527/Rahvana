@@ -22,6 +22,7 @@ import { encryptFile } from "@/lib/document-vault/file-encryption";
 import { assertRequestBodySize } from "@/lib/security/request-body";
 import { validateUploadedFile } from "@/lib/security/file-content";
 import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 // NVC/USCIS file size limit (4MB)
 const NVC_FILE_SIZE_LIMIT = 4 * 1024 * 1024;
@@ -118,14 +119,9 @@ export async function POST(request: NextRequest) {
   try {
     // Authenticate user
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     // Parse form data
     const formData = await request.formData();

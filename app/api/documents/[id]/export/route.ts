@@ -4,24 +4,19 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { E, msg } from "@/lib/errors";
-import { createClient } from "@/lib/supabase/server";
 import { DocumentFileManager } from "@/lib/document-vault/storage-server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import JSZip from "jszip";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Authenticate user
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
 
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Authenticate user
+    const { user, supabase } = sessionGuard.context;
 
     const { id } = await params;
     const documentId = id;
