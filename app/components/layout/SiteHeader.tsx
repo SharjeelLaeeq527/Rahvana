@@ -12,9 +12,7 @@ import {
   LogOut,
   Zap,
   Briefcase,
-  Layout,
   Settings,
-  HelpCircle,
   Lock as LockIcon,
   CreditCard,
   Mail,
@@ -196,10 +194,10 @@ const QUICK_ACCESS_ITEM_STYLES: Record<string, QuickAccessItemStyle> = {
     hoverText: "group-hover:text-indigo-600 dark:group-hover:text-indigo-400",
   },
   default: {
-    bg: "bg-[#0d7377] text-white",
-    lightBg: "bg-[#0d7377]/10 text-[#0d7377] dark:bg-[#0d7377]/20 dark:text-[#32e0c4]",
-    hoverBorder: "hover:border-[#0d7377]/30 hover:bg-[#0d7377]/5",
-    hoverText: "group-hover:text-[#0d7377] dark:group-hover:text-[#32e0c4]",
+    bg: "bg-brand text-white",
+    lightBg: "bg-brand/10 text-brand dark:bg-brand/20 dark:text-[#32e0c4]",
+    hoverBorder: "hover:border-brand/30 hover:bg-brand/5",
+    hoverText: "group-hover:text-brand dark:group-hover:text-[#32e0c4]",
   },
 };
 
@@ -918,7 +916,7 @@ export function SiteHeader({
               isHomeHeroState
                 ? "text-TEAL hover:bg-white/15"
                 : isHomepageHeroState
-                  ? "text-[#0d7377] hover:bg-[#0d7377]/10"
+                  ? "text-brand hover:bg-brand/10"
                   : "text-foreground hover:bg-muted"
             }`}
             onClick={() => setIsMenuOpen(true)}
@@ -961,7 +959,7 @@ export function SiteHeader({
             <nav className="hidden items-center gap-3 lg:flex">
               {/* Active Journey Indicator Badge */}
               <div className="flex items-center gap-2.5 rounded-full border border-teal-500/25 bg-teal-50/75 px-3.5 py-1.5 shadow-xs backdrop-blur-md dark:border-teal-400/20 dark:bg-teal-950/40">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0d7377] text-white shadow-xs">
+                <div className="bg-brand flex h-6 w-6 items-center justify-center rounded-full text-white shadow-xs">
                   <Compass className="h-3.5 w-3.5 animate-pulse" />
                 </div>
                 <div className="flex flex-col">
@@ -988,13 +986,13 @@ export function SiteHeader({
                   className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
                     isHomeHeroState
                       ? isActive(journeyNavigationId, journeyButtonHref)
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                        ? "bg-muted text-brand"
+                        : "text-muted-foreground hover:bg-muted hover:text-brand"
                       : isHomeHeroP2State || isHomepageHeroState
-                        ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                        ? "text-brand hover:bg-brand/10 hover:text-brand"
                         : isActive(journeyNavigationId, journeyButtonHref)
-                          ? "bg-muted text-[#0d7377]"
-                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                          ? "bg-muted text-brand"
+                          : "text-muted-foreground hover:bg-muted hover:text-brand"
                   }`}
                 >
                   {journeyButtonText}
@@ -1017,7 +1015,7 @@ export function SiteHeader({
                         ? "bg-muted text-brand"
                         : "text-muted-foreground hover:bg-muted hover:text-brand"
                       : isHomeHeroP2State || isHomepageHeroState
-                        ? "hover:text-brand text-[#3fb8bc] hover:bg-[#0d7377]/10"
+                        ? "hover:text-brand hover:bg-brand/10 text-[#3fb8bc]"
                         : isActive("resources") || activeMenu === "resources"
                           ? "bg-muted text-brand"
                           : "text-muted-foreground hover:bg-muted hover:text-brand"
@@ -1042,12 +1040,12 @@ export function SiteHeader({
                     isHomeHeroState
                       ? isActive("blog", "/blog")
                         ? "bg-muted text-brand"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-brand"
                       : isHomeHeroP2State || isHomepageHeroState
-                        ? "hover:text-brand text-[#3fb8bc] hover:bg-[#0d7377]/8"
+                        ? "hover:text-brand hover:bg-brand/8 text-[#3fb8bc]"
                         : isActive("blog", "/blog")
                           ? "bg-muted text-brand"
-                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-brand"
                   }`}
                 >
                   Blog
@@ -1061,12 +1059,12 @@ export function SiteHeader({
                     isHomeHeroState
                       ? isActive("about", "/about")
                         ? "bg-muted text-brand"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-brand"
                       : isHomeHeroP2State || isHomepageHeroState
-                        ? "hover:text-brand text-[#3fb8bc] hover:bg-[#0d7377]/8"
+                        ? "hover:text-brand hover:bg-brand/8 text-[#3fb8bc]"
                         : isActive("about", "/about")
                           ? "bg-muted text-brand"
-                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-brand"
                   }`}
                 >
                   About
@@ -1081,12 +1079,12 @@ export function SiteHeader({
                     isHomeHeroState
                       ? isActive("pricing", "/pricing")
                         ? "bg-muted text-brand"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-brand"
                       : isHomeHeroP2State || isHomepageHeroState
-                        ? "hover:text-brand text-[#3fb8bc] hover:bg-[#0d7377]/8"
+                        ? "hover:text-brand hover:bg-brand/8 text-[#3fb8bc]"
                         : isActive("pricing", "/pricing")
                           ? "bg-muted text-brand"
-                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-brand"
                   }`}
                 >
                   Pricing
@@ -1101,12 +1099,12 @@ export function SiteHeader({
                       isHomeHeroState
                         ? isActive("faq")
                           ? "bg-muted text-brand"
-                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-brand"
                         : isHomeHeroP2State || isHomepageHeroState
-                          ? "hover:text-brand text-[#3fb8bc] hover:bg-[#0d7377]/10"
+                          ? "hover:text-brand hover:bg-brand/10 text-[#3fb8bc]"
                           : isActive("faq")
                             ? "bg-muted text-brand"
-                            : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                            : "text-muted-foreground hover:bg-muted hover:text-brand"
                     }`}
                   >
                     FAQ
@@ -1121,12 +1119,12 @@ export function SiteHeader({
                     isHomeHeroState
                       ? isActive("contact")
                         ? "bg-muted text-brand"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-brand"
                       : isHomeHeroP2State || isHomepageHeroState
-                        ? "hover:text-brand text-[#3fb8bc] hover:bg-[#0d7377]/10"
+                        ? "hover:text-brand hover:bg-brand/10 text-[#3fb8bc]"
                         : isActive("contact")
                           ? "bg-muted text-brand"
-                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-brand"
                   }`}
                 >
                   Contact
@@ -1170,7 +1168,7 @@ export function SiteHeader({
                   onClick={handleLinkClick}
                   className="text-muted-foreground hover:bg-muted hover:text-brand flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors"
                 >
-                  <Wrench className="dark:text-brand h-4 w-4 text-[#0d7377]" />
+                  <Wrench className="dark:text-brand text-brand h-4 w-4" />
                   My Tools
                 </Link>
                 <Link
@@ -1218,7 +1216,7 @@ export function SiteHeader({
                 setNotificationsOpen(false);
                 setQuickAccessOpen(false);
               }}
-              className="absolute top-2 right-16 flex h-10 w-10 items-center justify-center rounded-full border-0 bg-transparent text-[#0d7377] shadow-none max-[767px]:flex min-[768px]:hidden"
+              className="text-brand absolute top-2 right-16 flex h-10 w-10 items-center justify-center rounded-full border-0 bg-transparent shadow-none max-[767px]:flex min-[768px]:hidden"
             >
               <LayoutGrid className="h-5 w-5" aria-hidden="true" />
             </HydrationSafeButton>
@@ -1257,7 +1255,7 @@ export function SiteHeader({
                         isHomeHeroState
                           ? "text-white"
                           : isHomeHeroP2State
-                            ? "text-[#0d7377]"
+                            ? "text-brand"
                             : "text-rahvana-primary"
                       }`}
                       style={{
@@ -1272,15 +1270,14 @@ export function SiteHeader({
                     >
                       <div className="relative inline-flex">
                         <Bell
-                          className="h-5 w-5"
-                          aria-hidden="true"
-                          style={
+                          className={`h-5 w-5 ${
                             isHomeHeroState
-                              ? { color: "#305d5aff" }
+                              ? "text-brand"
                               : isHomeHeroP2State
-                                ? { color: "#0d7377" }
-                                : { color: "var(--rahvana-primary, #0d7377)" }
-                          }
+                                ? "text-brand"
+                                : "text-brand dark:text-brand"
+                          }`}
+                          aria-hidden="true"
                         />
                         {unreadCount > 0 && (
                           <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full border border-white/50 bg-red-500 text-[9px] font-medium text-white">
@@ -1303,9 +1300,7 @@ export function SiteHeader({
                           <div className="border-border bg-muted/30 flex items-center justify-between border-b px-4 py-3">
                             <div className="flex items-center gap-2">
                               <Bell className="text-brand h-4 w-4" />
-                              <span className="text-foreground text-sm font-bold">
-                                Notifications
-                              </span>
+                              <span className="text-brand text-sm font-bold">Notifications</span>
                             </div>
                             <span className="text-muted-foreground bg-muted rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase">
                               {unreadCount > 0 ? `${unreadCount} New` : "0 New"}
@@ -1386,7 +1381,7 @@ export function SiteHeader({
                                           {bodyLong && (
                                             <button
                                               onClick={() => toggleExpand(n.id)}
-                                              className="mt-0.5 text-[10px] font-bold text-[#0d7377] hover:underline"
+                                              className="text-brand mt-0.5 text-[10px] font-bold hover:underline"
                                             >
                                               {isExpanded ? "Show less ↑" : "Read more ↓"}
                                             </button>
@@ -1394,9 +1389,9 @@ export function SiteHeader({
                                           {!isRead && (
                                             <button
                                               onClick={() => markOneRead(n.id)}
-                                              className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-[#0d7377] hover:underline"
+                                              className="text-brand mt-1 flex items-center gap-1 text-[10px] font-semibold hover:underline"
                                             >
-                                              <span className="flex h-3 w-3 items-center justify-center rounded-full border border-[#0d7377] text-[7px]">
+                                              <span className="border-brand flex h-3 w-3 items-center justify-center rounded-full border text-[7px]">
                                                 ✓
                                               </span>
                                               Mark as read
@@ -1405,7 +1400,7 @@ export function SiteHeader({
                                           {n.action_label && n.action_url && (
                                             <a
                                               href={n.action_url}
-                                              className="mt-1 inline-block text-[10px] font-black tracking-wide text-[#0d7377] uppercase hover:underline"
+                                              className="text-brand mt-1 inline-block text-[10px] font-black tracking-wide uppercase hover:underline"
                                             >
                                               {n.action_label} →
                                             </a>
@@ -1426,7 +1421,7 @@ export function SiteHeader({
                                   (!notifSeeAll ? (
                                     <button
                                       onClick={() => setNotifSeeAll(true)}
-                                      className="hover:bg-muted/50 border-border w-full border-t px-4 py-2.5 text-xs font-bold text-[#0d7377] transition-colors"
+                                      className="hover:bg-muted/50 border-border text-brand w-full border-t px-4 py-2.5 text-xs font-bold transition-colors"
                                     >
                                       See More ({notifList.length - visibleNotifCount})
                                     </button>
@@ -1472,10 +1467,10 @@ export function SiteHeader({
                     isHomeHeroState
                       ? "text-white"
                       : isHomeHeroP2State
-                        ? "text-[#0d7377]"
+                        ? "text-brand"
                         : quickAccessOpen
-                          ? "text-[#0d7377]"
-                          : "text-rahvana-primary"
+                          ? "text-brand"
+                          : "text-brand"
                   }`}
                   style={{
                     padding: 0,
@@ -1489,7 +1484,7 @@ export function SiteHeader({
                 >
                   <div className="relative inline-flex">
                     <Heart
-                      className={`h-5 w-5 transition-all duration-200 ${quickAccessOpen ? "fill-[#0d7377] text-[#0d7377]" : ""}`}
+                      className={`h-5 w-5 transition-all duration-200 ${quickAccessOpen ? "fill-primary text-primary" : ""}`}
                       style={
                         isHomeHeroState
                           ? { color: "#305d5aff" }
@@ -1519,7 +1514,7 @@ export function SiteHeader({
                       <div className="border-border bg-muted/30 flex items-center justify-between rounded-t-xl border-b px-4 py-2.5">
                         <div className="flex items-center gap-2">
                           <Heart className="fill-brand text-brand h-4 w-4" />
-                          <span className="text-foreground text-sm font-bold">Favorites</span>
+                          <span className="text-brand text-sm font-bold">Favorites</span>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -1531,7 +1526,7 @@ export function SiteHeader({
                                 className={`rounded-md p-1 transition-all ${
                                   viewMode === "list"
                                     ? "bg-surface-raised text-brand shadow-xs"
-                                    : "text-muted-foreground hover:text-foreground"
+                                    : "text-muted-foreground hover:text-brand"
                                 }`}
                                 title="List View"
                               >
@@ -1542,7 +1537,7 @@ export function SiteHeader({
                                 className={`rounded-md p-1 transition-all ${
                                   viewMode === "grid"
                                     ? "bg-surface-raised text-brand shadow-xs"
-                                    : "text-muted-foreground hover:text-foreground"
+                                    : "text-muted-foreground hover:text-brand"
                                 }`}
                                 title="Grid View"
                               >
@@ -1560,8 +1555,8 @@ export function SiteHeader({
                       <div className="max-h-[320px] overflow-y-auto">
                         {quickAccessItems.length === 0 ? (
                           <div className="flex flex-col items-center justify-center gap-3 px-6 py-10">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0d7377]/8">
-                              <Heart className="h-5 w-5 text-[#0d7377]/40" />
+                            <div className="bg-brand/8 flex h-12 w-12 items-center justify-center rounded-2xl">
+                              <Heart className="text-brand/40 h-5 w-5" />
                             </div>
                             <div className="space-y-1 text-center">
                               <p className="text-foreground text-sm font-semibold">
@@ -1664,7 +1659,7 @@ export function SiteHeader({
                         <Link
                           href="/resources"
                           onClick={() => setQuickAccessOpen(false)}
-                          className="flex items-center gap-1 text-xs font-medium text-[#0d7377] transition-colors hover:underline"
+                          className="text-brand flex items-center gap-1 text-xs font-medium transition-colors hover:underline"
                         >
                           <Wrench className="h-3 w-3" />
                           Browse all resources
@@ -1701,7 +1696,7 @@ export function SiteHeader({
 
           {/* LOGIN / PROFILE toggle */}
           {isLoading && !resolvedUser ? (
-            <div className="h-10 w-22 animate-pulse rounded-lg bg-[#0d7377]/10" />
+            <div className="bg-brand/10 h-10 w-22 animate-pulse rounded-lg" />
           ) : user ? (
             <div className="flex items-center gap-2">
               <div
@@ -1721,11 +1716,7 @@ export function SiteHeader({
                     setActiveMenu(activeMenu === "profile" ? null : "profile");
                   }}
                   className={`mb-2 flex h-10 w-10 items-center justify-center rounded-full border-0 bg-transparent p-0 text-lg font-semibold shadow-none transition-all max-[767px]:mb-0 ${
-                    isHomeHeroState
-                      ? "text-white"
-                      : isHomeHeroP2State
-                        ? "text-[#0d7377]"
-                        : "text-rahvana-primary"
+                    isHomeHeroState ? "text-white" : isHomeHeroP2State ? "text-brand" : "text-brand"
                   }`}
                 >
                   <span
@@ -1734,7 +1725,7 @@ export function SiteHeader({
                         ? { color: "#305d5aff" }
                         : isHomeHeroP2State
                           ? { color: "#0d7377" }
-                          : { color: "var(--rahvana-primary, #0d7377)" }
+                          : { color: "var(--brand, #0d7377)" }
                     }
                     className="flex h-full w-full items-center justify-center"
                   >
@@ -1774,37 +1765,37 @@ export function SiteHeader({
                       <div className="border-border border-b py-2">
                         <button
                           onClick={() => handleNav("profile")}
-                          className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
+                          className="text-muted-foreground hover:bg-muted hover:text-brand flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors"
                         >
                           <UserIcon className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                           My Profile
                         </button>
                         <button
                           onClick={() => handleNav("my-journeys")}
-                          className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
+                          className="text-muted-foreground hover:bg-muted hover:text-brand flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors"
                         >
                           <Map className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
                           My Journeys
                         </button>
                         <button
                           onClick={() => handleNav("document-vault")}
-                          className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
+                          className="text-muted-foreground hover:bg-muted hover:text-brand flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors"
                         >
                           <FolderLock className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                           Document Vault
                         </button>
                         <button
                           onClick={() => handleNav("portal-wallet")}
-                          className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
+                          className="text-muted-foreground hover:bg-muted hover:text-brand flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors"
                         >
                           <LockIcon className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
                           Portal Wallet
                         </button>
                         <button
                           onClick={() => handleNav("transactions")}
-                          className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
+                          className="text-muted-foreground hover:bg-muted hover:text-brand flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors"
                         >
-                          <Receipt className="h-4 w-4 text-[#0d7377] dark:text-teal-400" />
+                          <Receipt className="text-brand h-4 w-4 dark:text-teal-400" />
                           Transactions
                         </button>
                       </div>
@@ -1813,7 +1804,7 @@ export function SiteHeader({
                       <div className="border-border border-b py-2">
                         <button
                           onClick={() => handleNav("settings")}
-                          className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
+                          className="text-muted-foreground hover:bg-muted hover:text-brand flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors"
                         >
                           <Settings className="text-subtle h-4 w-4" />
                           Account Settings
@@ -1914,7 +1905,7 @@ export function SiteHeader({
                   {/* Active Journey Card */}
                   <div className="rounded-xl border border-teal-500/30 bg-teal-50/70 p-4 dark:border-teal-400/20 dark:bg-teal-950/30">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0d7377] text-white shadow-xs">
+                      <div className="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-xs">
                         <Compass className="h-5 w-5 animate-pulse" />
                       </div>
                       <div className="flex min-w-0 flex-col">
@@ -1952,17 +1943,17 @@ export function SiteHeader({
                     className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
                       isHomeHeroState
                         ? isActive(journeyNavigationId, journeyButtonHref)
-                          ? "bg-muted text-[#0d7377]"
-                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                          ? "bg-muted text-brand"
+                          : "text-muted-foreground hover:bg-muted hover:text-brand"
                         : isHomeHeroP2State || isHomepageHeroState
-                          ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                          ? "text-brand hover:bg-brand/10 hover:text-brand"
                           : isActive(journeyNavigationId, journeyButtonHref)
-                            ? "bg-muted text-[#0d7377]"
-                            : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                            ? "bg-muted text-brand"
+                            : "text-muted-foreground hover:bg-muted hover:text-brand"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Briefcase className="h-5 w-5 text-[#0d7377]" />
+                      <Briefcase className="text-brand h-5 w-5" />
                       <span className="font-bold">{journeyButtonText}</span>
                     </div>
                   </Link>
@@ -2052,7 +2043,7 @@ export function SiteHeader({
                         >
                           <div className="flex items-center gap-3">
                             {MOBILE_ICONS[section.id] || (
-                              <Briefcase className="h-5 w-5 text-[#0d7377]" />
+                              <Briefcase className="text-brand h-5 w-5" />
                             )}
                             <span className="font-bold">{section.label}</span>
                           </div>
@@ -2134,7 +2125,7 @@ export function SiteHeader({
                                   <Link
                                     href={section.footerLink.href}
                                     onClick={handleLinkClick}
-                                    className="mt-2 flex items-center gap-1 px-2 text-sm font-semibold text-[#0d7377] hover:underline"
+                                    className="text-brand mt-2 flex items-center gap-1 px-2 text-sm font-semibold hover:underline"
                                   >
                                     {section.footerLink.label} &rarr;
                                   </Link>
@@ -2151,7 +2142,7 @@ export function SiteHeader({
                     onClick={() => handleNav("blog")}
                     className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
                       isActive("blog")
-                        ? "bg-[#0d7377]/10 text-[#0d7377]"
+                        ? "bg-brand/10 text-brand"
                         : "text-muted-foreground hover:bg-muted"
                     }`}
                   >
@@ -2162,7 +2153,7 @@ export function SiteHeader({
                     onClick={() => handleNav("about")}
                     className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
                       isActive("about")
-                        ? "bg-[#0d7377]/10 text-[#0d7377]"
+                        ? "bg-brand/10 text-brand"
                         : "text-muted-foreground hover:bg-muted"
                     }`}
                   >
@@ -2173,7 +2164,7 @@ export function SiteHeader({
                     onClick={() => handleNav("pricing")}
                     className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
                       isActive("pricing")
-                        ? "bg-[#0d7377]/10 text-[#0d7377]"
+                        ? "bg-brand/10 text-brand"
                         : "text-muted-foreground hover:bg-muted"
                     }`}
                   >
@@ -2185,7 +2176,7 @@ export function SiteHeader({
                       onClick={() => handleNav("faq")}
                       className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
                         isActive("faq")
-                          ? "bg-[#0d7377]/10 text-[#0d7377]"
+                          ? "bg-brand/10 text-brand"
                           : "text-muted-foreground hover:bg-muted"
                       }`}
                     >
@@ -2201,7 +2192,7 @@ export function SiteHeader({
                         : "text-muted-foreground hover:bg-muted"
                     }`}
                   >
-                    <Mail className="h-5 w-5 text-[#0d7377]" />
+                    <Mail className="text-brand h-5 w-5" />
                     <span className="font-bold">Contact</span>
                   </HydrationSafeButton>
                 </>
