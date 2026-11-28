@@ -1,6 +1,7 @@
 // app/api/admin/guides/mark-resolved/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 // Specific admin emails - ONLY these emails can access admin panel
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "hammadnooralam@gmail.com")
@@ -55,6 +56,9 @@ async function checkAdminRole(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const { isAdmin, error: authError } = await checkAdminRole(request);
 
     if (!isAdmin) {

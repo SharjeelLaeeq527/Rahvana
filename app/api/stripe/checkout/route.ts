@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
 import { E, msg } from "@/lib/errors";
-import { getAuthenticatedUser } from "@/lib/api/authGuards";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 import { acquireCheckoutLock, releaseCheckoutLock } from "@/lib/stripe/checkoutLock";
 import { IR2_ENABLED } from "@/lib/feature-flags";
 import { journeyBaseCategory } from "@/lib/journey/journeyConfig";
@@ -68,10 +68,9 @@ export async function POST(request: NextRequest) {
     // AUTH: the buyer is always the authenticated user. Never trust a `userId`
     // from the request body — that allowed anyone to create checkouts/payment
     // rows for arbitrary accounts.
-    const user = await getAuthenticatedUser();
-    if (!user) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
     const userId = user.id;
 
     const body = await request.json();

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { E, msg } from "@/lib/errors";
-import { getAuthenticatedUser, getServiceRoleClient } from "@/lib/api/authGuards";
+import { getServiceRoleClient } from "@/lib/api/authGuards";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 export async function GET(request: NextRequest) {
   // Debug endpoint — never expose in production.
@@ -19,10 +20,9 @@ export async function GET(request: NextRequest) {
   }
 
   // AUTH: caller must be logged in
-  const user = await getAuthenticatedUser();
-  if (!user) {
-    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-  }
+  const sessionGuard = await requireActiveSessionForRequest(request);
+  if (!sessionGuard.ok) return sessionGuard.response;
+  const { user } = sessionGuard.context;
 
   const supabase = getServiceRoleClient();
 

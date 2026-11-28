@@ -67,6 +67,7 @@ interface AuthContextType {
   }>;
   signUp: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
+  signOutAll: () => Promise<void>;
   signInWithGoogle: (redirectUrl?: string | null) => Promise<{ error: AuthError | null }>;
   enableMFA: () => Promise<{
     success: boolean;
@@ -120,6 +121,11 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+async function getResponseError(response: Response, fallback: string): Promise<string> {
+  const body = await response.json().catch(() => null);
+  return typeof body?.error === "string" ? body.error : fallback;
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -359,43 +365,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const verifyMFALogin = async (factorId: string, challengeId: string, code: string) => {
-    try {
-      const { error } = await supabase.auth.mfa.verify({
+  
+const verifyMFALogin = async (
+  factorId: string,
+  challengeId: string,
+  code: string
+) => {
+  try {
+    const response = await fetch("/api/auth/mfa/verify-login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         factorId,
         challengeId,
         code,
-      });
+      }),
+    });
 
-      if (error) {
-        return { success: false, error: msg(E.AUTH_MFA_CODE_INVALID) };
-      }
+    const data = await response.json();
 
-      // 🔥 Get updated session AFTER successful verification
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError || !session) {
-        return {
-          success: false,
-          error: "Failed to retrieve upgraded session",
-        };
-      }
-
-      return {
-        success: true,
-        user: session.user,
-        session,
-      };
-    } catch {
+    if (!response.ok) {
       return {
         success: false,
-        error: msg(E.AUTH_MFA_CODE_INVALID),
+        error: data.error || msg(E.AUTH_MFA_CODE_INVALID),
       };
     }
-  };
+
+    // Retrieve the session from the browser's Supabase client.
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError || !session) {
+      return {
+        success: false,
+        error: "Failed to retrieve upgraded session",
+      };
+    }
+
+    return {
+      success: true,
+      user: session.user,
+      session,
+    };
+  } catch (error) {
+    console.error("[AuthContext] MFA verification failed:", error);
+
+    return {
+      success: false,
+      error: msg(E.AUTH_MFA_CODE_INVALID),
+    };
+  }
+};
 
   const getAuthenticatorAssuranceLevel = async () => {
     try {
@@ -594,14 +618,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    // ── SERVER-SIDE SIGN OUT (fire-and-forget) ──────────────────────
-    // Don't await this — if the API route hangs (cold start, network),
-    // we must not block the UI. The full page reload will handle the rest.
-    fetch("/api/auth/signout", { method: "POST" }).catch(() => {});
+    const sessionsResponse = await fetch("/api/security/sessions", {
+      cache: "no-store",
+    });
+    if (!sessionsResponse.ok) {
+      throw new Error(
+        await getResponseError(sessionsResponse, "Unable to load the current session.")
+      );
+    }
+
+    const sessionsBody = (await sessionsResponse.json()) as {
+      sessions?: Array<{ id?: string; isCurrent?: boolean }>;
+    };
+    const currentSession = sessionsBody.sessions?.find(
+      (securitySession) => securitySession.isCurrent && typeof securitySession.id === "string"
+    );
+    if (!currentSession?.id) {
+      throw new Error("Unable to find the current session to sign out.");
+    }
+
+    const revokeResponse = await fetch(
+      `/api/security/sessions/${encodeURIComponent(currentSession.id)}`,
+      { method: "DELETE" }
+    );
+    if (!revokeResponse.ok) {
+      throw new Error(await getResponseError(revokeResponse, "Unable to sign out this session."));
+    }
+
+    const revokeBody = (await revokeResponse.json()) as { isCurrent?: boolean };
+    if (!revokeBody.isCurrent) {
+      throw new Error("The current session could not be signed out.");
+    }
 
     // ── LOCAL SIGN OUT (with timeout) ───────────────────────────────
-    // supabase.auth.signOut() can sometimes hang in production.
-    // Race it against a 3-second timeout so the UI is never stuck.
+    // The server has already revoked this session and recorded the activity.
+    // Clear the browser client's auth state before the full page reload.
     try {
       await Promise.race([
         supabase.auth.signOut({ scope: "local" }),
@@ -612,6 +663,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // ── CLEAR REACT STATE ───────────────────────────────────────────
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    setIsAdmin(false);
+    setIsAdminLoading(false);
+  };
+
+  const signOutAll = async () => {
+    const response = await fetch("/api/auth/signout", { method: "POST" });
+    if (!response.ok) {
+      throw new Error(await getResponseError(response, "Unable to sign out all devices."));
+    }
+
+    const { error } = await supabase.auth.signOut({ scope: "local" });
+    if (error) throw error;
+
     setUser(null);
     setSession(null);
     setProfile(null);
@@ -652,6 +719,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signUp,
         signOut,
+        signOutAll,
         signInWithGoogle,
         enableMFA,
         verifyMFASetup,

@@ -17,6 +17,7 @@ import { CeacReminderEngine } from "@/lib/ceac-tracking/CeacReminderEngine";
 import { isValidTransition, isTrackingActive } from "@/lib/ceac-tracking/stateMachine";
 import type { CeacStatus, RefusedSubType } from "@/lib/ceac-tracking/types";
 import { E, msg } from "@/lib/errors";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 // ─────────────────────────────────────────────────────────────
 // POST /api/ceac/status
@@ -27,14 +28,9 @@ import { E, msg } from "@/lib/errors";
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user)
-      return NextResponse.json(
-        { success: false, code: E.AUTH_UNAUTHORIZED, message: msg(E.AUTH_UNAUTHORIZED) },
-        { status: 401 }
-      );
+    const sessionGuard = await requireActiveSession(supabase, req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const body = await req.json();
     const { journeyId, newStatus, refusedSubType } = body as {
@@ -133,14 +129,9 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user)
-      return NextResponse.json(
-        { success: false, code: E.AUTH_UNAUTHORIZED, message: msg(E.AUTH_UNAUTHORIZED) },
-        { status: 401 }
-      );
+    const sessionGuard = await requireActiveSession(supabase, req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const body = await req.json();
     const { journeyId, action, refusedSubType } = body as {

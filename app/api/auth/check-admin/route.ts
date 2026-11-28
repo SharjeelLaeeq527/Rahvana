@@ -1,6 +1,7 @@
 // app/api/auth/check-admin/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 // Specific admin emails — only these have admin access
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "hammadnooralam@gmail.com")
@@ -19,6 +20,9 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "hammadnooralam@gmail.com")
 
 export async function POST(request: NextRequest) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     if (!request.body) {
       return NextResponse.json({ error: "Request body is required" }, { status: 400 });
     }
@@ -27,6 +31,9 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+    }
+    if (userId !== sessionGuard.context.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createClientJs } from "@supabase/supabase-js";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
@@ -21,14 +22,9 @@ function getStorageClient() {
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;

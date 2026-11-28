@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/config";
 import { paymentService } from "@/lib/services/paymentService";
 import { E, msg } from "@/lib/errors";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 export async function POST(request: NextRequest) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const { userId } = await request.json();
 
     if (!userId) {
@@ -12,6 +16,9 @@ export async function POST(request: NextRequest) {
         { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[userId]" }) },
         { status: 400 }
       );
+    }
+    if (userId !== sessionGuard.context.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Get user's Stripe customer ID

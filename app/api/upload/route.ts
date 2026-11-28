@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { msg, E } from "@/lib/errors";
-import { getAuthenticatedUser, getServiceRoleClient } from "@/lib/api/authGuards";
+import { getServiceRoleClient } from "@/lib/api/authGuards";
+import { createClient } from "@/lib/supabase/server";
+import { requireActiveSession } from "@/lib/security/session-guard";
 import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
 import { validateUploadedFile } from "@/lib/security/file-content";
 
@@ -24,11 +26,10 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: msg(E.UPLOAD_INVALID_FILE_TYPE) }, { status: 400 });
     }
 
-    // AUTH: caller must be logged in
-    const user = await getAuthenticatedUser();
-    if (!user) {
-      return Response.json({ error: "Authentication required" }, { status: 401 });
-    }
+    const authClient = await createClient();
+    const sessionGuard = await requireActiveSession(authClient, req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     // Service role bypasses RLS — used only AFTER verifying ownership below.
     const supabase = getServiceRoleClient();

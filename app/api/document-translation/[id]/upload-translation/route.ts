@@ -8,6 +8,7 @@ import { triggerTranslationNotification } from "@/lib/notifications";
 import { requireAdmin } from "@/lib/api/authGuards";
 import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
 import { validateUploadedFile } from "@/lib/security/file-content";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 function getStorageSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -19,6 +20,9 @@ function getStorageSupabase() {
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     // AUTHZ: admin only (this route uses the service role → bypasses RLS)
     const { isAdmin, error: authError } = await requireAdmin();
     if (!isAdmin) {

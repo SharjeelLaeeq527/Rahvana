@@ -3,9 +3,15 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { sendEmail, getMFAEnabledEmailHtml } from "@/lib/email/resend";
 import { E, msg } from "@/lib/errors";
+import { recordAccountEvent } from "@/lib/security/security-activity";
+import { getRequestDevice } from "@/lib/security/security-context";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 export async function POST(request: NextRequest) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const supabase = await createClient();
     const { factorId, code } = await request.json();
 
@@ -99,6 +105,21 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error("Error updating profile with MFA status:", updateError);
     }
+
+    // Record successful MFA enrollment.
+// Do not fail enrollment if the activity store is unavailable.
+try {
+  await recordAccountEvent({
+    userId: user.id,
+    eventType: "mfa_enabled",
+    device: getRequestDevice(request),
+  });
+} catch (activityError) {
+  console.error(
+    "[mfa-enrollment] activity write failed:",
+    activityError
+  );
+}
 
     // Send MFA enabled notification email
     try {

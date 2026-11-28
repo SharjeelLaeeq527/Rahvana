@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getApprovedComments, submitComment } from "@/lib/blog/comments";
 import type { CreateCommentInput } from "@/types/blog-comments";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -17,18 +18,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Missing article slug" }, { status: 400 });
     }
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const supabase = sessionGuard.context.supabase;
+    const user = sessionGuard.context.user;
 
-    const { threads, totalCount } = await getApprovedComments(slug.trim(), user?.id ?? null);
+    let activeUserId: string | null = null;
+    if (user) {
+      const sessionGuard = await requireActiveSessionForRequest(request);
+      if (!sessionGuard.ok) {
+        if (sessionGuard.response.status === 503) return sessionGuard.response;
+      } else {
+        activeUserId = sessionGuard.context.user.id;
+      }
+    }
+
+    const { threads, totalCount } = await getApprovedComments(slug.trim(), activeUserId);
 
     return NextResponse.json({
       comments: threads,
       count: totalCount,
-      isAuthenticated: Boolean(user),
-      currentUserId: user?.id ?? null,
+      isAuthenticated: Boolean(activeUserId),
+      currentUserId: activeUserId,
     });
   } catch (error) {
     console.error("[api/blog/comments] GET error:", error);
@@ -42,17 +51,13 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "You must be signed in to post a comment or reply." },
-        { status: 401 }
-      );
-    }
 
     const body = (await request.json().catch(() => null)) as Partial<CreateCommentInput> | null;
     if (!body || !body.articleSlug || !body.content) {
@@ -80,7 +85,7 @@ export async function POST(request: NextRequest) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("full_name, avatar_url")
-      .eq("id", user.id)
+      .eq("id", sessionGuard.context.user.id)
       .maybeSingle();
 
     const authorName =
@@ -96,7 +101,7 @@ export async function POST(request: NextRequest) {
       (user.user_metadata?.picture as string | undefined)?.trim() ||
       null;
 
-    const newComment = await submitComment(user.id, authorName, authorAvatarUrl, {
+    const newComment = await submitComment(sessionGuard.context.user.id, authorName, authorAvatarUrl, {
       articleSlug: body.articleSlug.trim(),
       content: trimmedContent,
       parentId: body.parentId || null,

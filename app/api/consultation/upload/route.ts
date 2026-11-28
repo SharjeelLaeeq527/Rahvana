@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { E, msg } from "@/lib/errors";
-import { getAuthenticatedUser } from "@/lib/api/authGuards";
+import { createClient as createUserClient } from "@/lib/supabase/server";
 import { assertRequestBodySize } from "@/lib/security/request-body";
 import { validateUploadedFile } from "@/lib/security/file-content";
 import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,11 +17,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Supabase not configured" }, { status: 500 });
     }
 
-    // Uploads go to private storage with the service role: signed-in users only.
-    const user = await getAuthenticatedUser();
-    if (!user) {
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    const authClient = await createUserClient();
+    const sessionGuard = await requireActiveSession(authClient, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
     const formData = await request.formData();

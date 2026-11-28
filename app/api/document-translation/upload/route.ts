@@ -12,19 +12,14 @@ import {
   type JourneyServiceAccess,
 } from "@/lib/journey/journeyServiceAccess";
 import { getServiceRoleClient } from "@/lib/api/authGuards";
+import { requireActiveSession } from "@/lib/security/session-guard";
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Get current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const formData = await request.formData();
     const file = formData.get("file") as File;

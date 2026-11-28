@@ -3,11 +3,15 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin, getServiceRoleClient } from "@/lib/api/authGuards";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 const URL_TTL_SECONDS = 3600;
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     // AUTHZ: admin only (service-role client below bypasses RLS by design)
     const { isAdmin, error: authError } = await requireAdmin();
     if (!isAdmin) {

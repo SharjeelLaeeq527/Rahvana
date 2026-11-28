@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { consultationService } from "@/lib/services/consultationService";
 import { E, msg } from "@/lib/errors";
 import { requireAdmin } from "@/lib/api/authGuards";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 /** An unpaid standalone draft holds its slot only this long (the payment step). */
 const UNPAID_HOLD_MS = 15 * 60 * 1000;
@@ -17,7 +18,10 @@ function holdsSlot(b: { status?: string; payment_status?: string | null; created
   return true;
 }
 
-async function adminOnly() {
+async function adminOnly(request: NextRequest) {
+  const sessionGuard = await requireActiveSessionForRequest(request);
+  if (!sessionGuard.ok) return sessionGuard.response;
+
   const { isAdmin, user } = await requireAdmin();
   if (isAdmin) return null;
   return NextResponse.json(
@@ -97,7 +101,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const denied = await adminOnly();
+  const denied = await adminOnly(request);
   if (denied) return denied;
   try {
     const data = await request.json();
@@ -138,7 +142,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const denied = await adminOnly();
+  const denied = await adminOnly(request);
   if (denied) return denied;
   try {
     const { searchParams } = new URL(request.url);
@@ -169,7 +173,7 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const denied = await adminOnly();
+  const denied = await adminOnly(request);
   if (denied) return denied;
   try {
     const { searchParams } = new URL(request.url);

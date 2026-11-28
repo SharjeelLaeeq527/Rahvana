@@ -6,19 +6,15 @@ import { E, msg } from "@/lib/errors";
 import { assertRequestBodySize } from "@/lib/security/request-body";
 import { validateUploadedFile } from "@/lib/security/file-content";
 import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 export async function POST(request: Request) {
   try {
     // 1️⃣ Verify user session
     const supabase = await createClient(); // user session client
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const tooLarge = assertRequestBodySize(request);
     if (tooLarge) return tooLarge;

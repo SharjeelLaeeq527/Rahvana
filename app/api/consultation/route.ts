@@ -4,12 +4,12 @@ import type { PlanTier } from "@/lib/entitlements/config";
 import { consultationService } from "@/lib/services/consultationService";
 import { E, msg } from "@/lib/errors";
 import { triggerConsultationNotification } from "@/lib/notifications";
-import { createClient } from "@/lib/supabase/server";
-import { getAuthenticatedUser, getServiceRoleClient, requireAdmin } from "@/lib/api/authGuards";
+import { getServiceRoleClient, requireAdmin } from "@/lib/api/authGuards";
 import {
   spendJourneyServiceUse,
   verifyJourneyServiceAccess,
 } from "@/lib/journey/journeyServiceAccess";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 // Helper function to handle service errors (returns localized messages)
 const handleServiceError = (error: unknown, defaultMessage: string) => {
@@ -28,12 +28,12 @@ const handleServiceError = (error: unknown, defaultMessage: string) => {
 
 export async function GET(request: NextRequest) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     // Bookings carry contact details and case summaries: admins see all, a user
     // sees only their own.
-    const user = await getAuthenticatedUser();
-    if (!user) {
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    const { user } = sessionGuard.context;
     const { isAdmin } = await requireAdmin();
 
     const { searchParams } = new URL(request.url);
@@ -57,6 +57,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const data: ConsultationRequest = await request.json();
 
     // Validate required fields
@@ -80,13 +83,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const authClient = await createClient();
-    const {
-      data: { user },
-    } = await authClient.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    const { user, supabase: authClient } = sessionGuard.context;
     const userId = user.id;
 
     // Payment is decided here, never by the client. A journey booking is covered by
@@ -176,6 +173,9 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
@@ -186,10 +186,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const user = await getAuthenticatedUser();
-    if (!user) {
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    const { user } = sessionGuard.context;
     const { isAdmin } = await requireAdmin();
 
     const data = await request.json();

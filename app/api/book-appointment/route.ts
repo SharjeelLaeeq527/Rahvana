@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 import { triggerAppointmentNotification } from "@/lib/notifications";
 import {
@@ -7,12 +8,19 @@ import {
   verifyJourneyServiceAccess,
   type JourneyServiceAccess,
 } from "@/lib/journey/journeyServiceAccess";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 export async function POST(req: NextRequest) {
   console.log("=== Starting appointment submission ===");
 
   try {
-    // Use the service role client to bypass RLS policies
+    const authClient = await createClient();
+    const sessionGuard = await requireActiveSession(authClient, req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
+    const currentUserId = user.id;
+
+    // Use the service role client to bypass RLS policies after session validation.
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -21,34 +29,10 @@ export async function POST(req: NextRequest) {
           getAll() {
             return [];
           },
-          setAll() {
-            // Do nothing for server-side operations
-          },
-        },
-      }
-    );
-
-    // A booking is either paid with the user's credits or covered by their journey
-    // plan, so it always needs a signed-in user.
-    const authClient = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return req.cookies.getAll();
-          },
           setAll() {},
         },
       }
     );
-    const {
-      data: { user },
-    } = await authClient.auth.getUser();
-    if (!user) {
-      return Response.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
-    const currentUserId = user.id;
 
     // Get form data from request
     const formData = await req.json();

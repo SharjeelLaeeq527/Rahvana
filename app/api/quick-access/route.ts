@@ -2,6 +2,7 @@
 import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { safeError } from "@/lib/api/safeError";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 /**
  * Helper: build an authenticated Supabase server client from cookies.
@@ -19,27 +20,6 @@ function buildClient(request: NextRequest) {
       },
     }
   );
-}
-
-async function getAuthUser(request: NextRequest) {
-  // Use anon key for auth check, then service key for data ops
-  const anonClient = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll() {},
-      },
-    }
-  );
-  const {
-    data: { user },
-    error,
-  } = await anonClient.auth.getUser();
-  return { user, error };
 }
 
 type ScopeType = "account" | "journey";
@@ -69,10 +49,9 @@ async function assertJourneyOwnership(
  * Returns ONLY the favorites for the requested scope.
  */
 export async function GET(request: NextRequest) {
-  const { user, error: authError } = await getAuthUser(request);
-  if (authError || !user) {
-    return Response.json({ error: "Authentication required" }, { status: 401 });
-  }
+  const sessionGuard = await requireActiveSessionForRequest(request);
+  if (!sessionGuard.ok) return sessionGuard.response;
+  const { user } = sessionGuard.context;
 
   const { searchParams } = new URL(request.url);
   const scopeType: ScopeType = searchParams.get("scope") === "journey" ? "journey" : "account";
@@ -109,10 +88,9 @@ export async function GET(request: NextRequest) {
  * Idempotent within a scope (delete-then-insert avoids partial-index onConflict issues).
  */
 export async function POST(request: NextRequest) {
-  const { user, error: authError } = await getAuthUser(request);
-  if (authError || !user) {
-    return Response.json({ error: "Authentication required" }, { status: 401 });
-  }
+  const sessionGuard = await requireActiveSessionForRequest(request);
+  if (!sessionGuard.ok) return sessionGuard.response;
+  const { user } = sessionGuard.context;
 
   let body: {
     id?: string;
@@ -188,10 +166,9 @@ export async function POST(request: NextRequest) {
  * Clearing account never clears journeys; clearing IR-1 never clears IR-5.
  */
 export async function DELETE(request: NextRequest) {
-  const { user, error: authError } = await getAuthUser(request);
-  if (authError || !user) {
-    return Response.json({ error: "Authentication required" }, { status: 401 });
-  }
+  const sessionGuard = await requireActiveSessionForRequest(request);
+  if (!sessionGuard.ok) return sessionGuard.response;
+  const { user } = sessionGuard.context;
 
   let body: { id?: string; all?: boolean; scope_type?: ScopeType; journey_id?: string | null };
   try {

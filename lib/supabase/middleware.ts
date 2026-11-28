@@ -9,6 +9,8 @@ import {
 } from "@supabase/supabase-js";
 import { auditLog } from "@/lib/security/audit-log";
 import { isStagingEmailAllowed } from "@/lib/security/staging-access";
+import { getSecurityContext } from "@/lib/security/security-context";
+import { assertActiveSession } from "@/lib/security/session-registry";
 
 // =============================
 // Admin Emails
@@ -38,6 +40,17 @@ const supabaseAdmin = createClient(
 // Supabase project makes the middleware hang until Vercel kills it with
 // 504 MIDDLEWARE_INVOCATION_TIMEOUT, which takes the whole page down with it.
 const MIDDLEWARE_SUPABASE_TIMEOUT_MS = 5000;
+
+const SESSION_CHECK_EXEMPT_API_ROUTES = new Set([
+  "/api/auth/login",
+  "/api/auth/signup",
+  "/api/auth/confirm-email",
+  "/api/auth/forgot-password",
+  "/api/auth/reset-password",
+  "/api/auth/signout",
+  "/api/auth/mfa/verify-login",
+  "/api/admin/logout",
+]);
 
 type GetUserResult =
   | { unavailable: false; user: User | null }
@@ -74,6 +87,22 @@ export async function getUserWithTimeout(supabase: Pick<SupabaseClient, "auth">)
   }
 }
 
+export async function isCurrentSecuritySessionActive(
+  supabase: SupabaseClient,
+  request: NextRequest,
+  user: User
+): Promise<boolean> {
+  const context = await getSecurityContext(supabase, request, user);
+  if (!context) throw new Error("Verified user session required.");
+  if (context.sessionId === null) return true;
+
+  return assertActiveSession(
+    context.user.id,
+    context.sessionId,
+    AbortSignal.timeout(MIDDLEWARE_SUPABASE_TIMEOUT_MS)
+  );
+}
+
 function serviceUnavailable(asJson: boolean) {
   const headers = { "Retry-After": "30" };
   if (asJson) {
@@ -89,7 +118,7 @@ function serviceUnavailable(asJson: boolean) {
 }
 
 export async function updateSession(request: NextRequest) {
-  const response = NextResponse.next();
+  let response = NextResponse.next();
   const pathname = request.nextUrl.pathname;
 
   // =============================
@@ -143,6 +172,11 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthRoute = authRoutes.includes(pathname);
   const isAdminAuthRoute = adminAuthRoutes.includes(pathname);
+  const isApiRoute = pathname.startsWith("/api/");
+  const shouldEnforceActiveSession =
+    isProtectedRoute ||
+    isAdminRoute ||
+    (isApiRoute && !SESSION_CHECK_EXEMPT_API_ROUTES.has(pathname));
 
   // =============================
   // Admin Route Protection
@@ -150,7 +184,10 @@ export async function updateSession(request: NextRequest) {
   const isApiAdminRoute = pathname.startsWith("/api/admin");
 
   const needsAuthCheck =
-    isProtectedRoute || isAdminRoute || isApiAdminRoute || isAuthRoute || isAdminAuthRoute;
+    shouldEnforceActiveSession ||
+    isApiAdminRoute ||
+    isAuthRoute ||
+    isAdminAuthRoute;
 
   // Optimize: Skip auth checks and API calls on completely public routes.
   // This avoids costly network requests to Supabase Auth on every static asset/page and prevents 504 Middleware Timeouts.
@@ -186,8 +223,8 @@ export async function updateSession(request: NextRequest) {
   // - Admin routes fail CLOSED (503): never let anyone in without a check.
   // - Every other route passes through unchanged. We cannot tell a signed-in
   //   user from a signed-out one right now, and sending a signed-in user to
-  //   /login would be wrong. Protected data stays safe: every API route checks
-  //   the session itself and RLS still applies.
+  //   /login would be wrong. Private API handlers and RLS retain their own
+  //   authorization checks.
   if (auth.unavailable) {
     console.warn(`[middleware] Supabase Auth unavailable (${auth.reason}) on ${pathname}`);
     if (isAdminRoute || isApiAdminRoute) {
@@ -196,6 +233,47 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
   const user = auth.user;
+
+  if (user && shouldEnforceActiveSession) {
+    try {
+      const isActive = await isCurrentSecuritySessionActive(supabase, request, user);
+      if (!isActive) {
+        if (isApiRoute) {
+          response = NextResponse.json(
+            { error: "Session revoked.", code: "SESSION_REVOKED" },
+            { status: 401 }
+          );
+        } else {
+          const url = request.nextUrl.clone();
+          url.pathname = "/login";
+          url.searchParams.set("error", "session_revoked");
+          response = NextResponse.redirect(url);
+        }
+
+        try {
+          const { error: signOutError } = await supabase.auth.signOut({ scope: "local" });
+          if (signOutError) {
+            console.warn("[middleware] local sign-out failed for revoked session:", signOutError);
+          }
+        } catch (signOutError) {
+          console.warn("[middleware] local sign-out failed for revoked session:", signOutError);
+        }
+        return response;
+      }
+    } catch (error) {
+      console.warn(`[middleware] active-session check failed on ${pathname}:`, error);
+      if (isApiRoute) {
+        return NextResponse.json(
+          {
+            error: "Unable to verify session.",
+            code: "SESSION_VALIDATION_UNAVAILABLE",
+          },
+          { status: 503, headers: { "Retry-After": "30" } }
+        );
+      }
+      return serviceUnavailable(isApiRoute);
+    }
+  }
 
   // =============================
   // Staging Access Session Check

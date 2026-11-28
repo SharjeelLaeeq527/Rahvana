@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthenticatedUser, getServiceRoleClient } from "@/lib/api/authGuards";
+import { getServiceRoleClient } from "@/lib/api/authGuards";
 import { launchResource } from "@/lib/wallet/launch";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 /**
  * POST /api/wallet/launch-tool
@@ -9,10 +10,9 @@ import { launchResource } from "@/lib/wallet/launch";
  * 402 = not enough credits (body carries the deficit and the top-up to offer).
  */
 export async function POST(request: NextRequest) {
-  const user = await getAuthenticatedUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
-  }
+  const sessionGuard = await requireActiveSessionForRequest(request);
+  if (!sessionGuard.ok) return sessionGuard.response;
+  const { user } = sessionGuard.context;
 
   let body: Record<string, unknown>;
   try {

@@ -4,10 +4,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { E, msg } from "@/lib/errors";
 import { ir1journeyHref } from "@/lib/constants/routes";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 function getAdminClient() {
   return createClient(
@@ -80,6 +79,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const { journeyId } = await request.json();
     if (!journeyId) {
       return NextResponse.json(
@@ -89,6 +91,18 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = getAdminClient();
+    const { data: journey, error: journeyError } = await supabase
+      .from("journeys")
+      .select("user_id")
+      .eq("id", journeyId)
+      .maybeSingle();
+    if (journeyError) {
+      console.error("[dev/seed-notifications] Journey lookup failed:", journeyError);
+      return NextResponse.json({ error: "Unable to verify journey access" }, { status: 503 });
+    }
+    if (!journey || journey.user_id !== sessionGuard.context.user.id) {
+      return NextResponse.json({ error: "Journey not found" }, { status: 404 });
+    }
 
     // Always clear previous demo notifications first — prevents duplicates on repeat clicks
     await supabase
@@ -132,8 +146,30 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const { journeyId } = await request.json();
+    if (!journeyId) {
+      return NextResponse.json(
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[journeyId]" }) },
+        { status: 400 }
+      );
+    }
+
     const supabase = getAdminClient();
+    const { data: journey, error: journeyError } = await supabase
+      .from("journeys")
+      .select("user_id")
+      .eq("id", journeyId)
+      .maybeSingle();
+    if (journeyError) {
+      console.error("[dev/seed-notifications] Journey lookup failed:", journeyError);
+      return NextResponse.json({ error: "Unable to verify journey access" }, { status: 503 });
+    }
+    if (!journey || journey.user_id !== sessionGuard.context.user.id) {
+      return NextResponse.json({ error: "Journey not found" }, { status: 404 });
+    }
 
     // Fully reset all notifications for this journey to allow clean testing
     await supabase.from("journey_reminders").delete().eq("journey_id", journeyId);

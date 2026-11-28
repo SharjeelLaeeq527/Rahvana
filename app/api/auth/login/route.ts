@@ -17,6 +17,10 @@ import { auditAuthSuccess, auditAuthFailure, auditBlocked } from "@/lib/security
 import { maybeRunSecurityScan } from "@/lib/security/alerting";
 import { isStagingEmailAllowed } from "@/lib/security/staging-access";
 
+import { getRequestDevice } from "@/lib/security/security-context";
+import { recordLoginFailure } from "@/lib/security/security-activity";
+import { registerVerifiedSession } from "@/lib/security/session-registry";
+
 /**
  * POST /api/auth/login
  *
@@ -118,14 +122,28 @@ export async function POST(request: NextRequest) {
   //
   const accountLockout = checkLoginLockout(email);
 
-  if (!accountLockout.allowed) {
-    auditBlocked(request, "auth.login", {
-      reason: "account_lockout",
-      email,
-    });
+if (!accountLockout.allowed) {
+  auditBlocked(request, "auth.login", {
+    reason: "account_lockout",
+    email,
+  });
 
-    return accountLockoutResponse(accountLockout);
+  // Record the login attempt blocked by account lockout.
+  try {
+    await recordLoginFailure({
+      email,
+      reason: "account_locked",
+      device: getRequestDevice(request),
+    });
+  } catch (activityError) {
+    console.error(
+      "[login] account-lockout activity write failed:",
+      activityError
+    );
   }
+
+  return accountLockoutResponse(accountLockout);
+}
 
   // 4. AUTHENTICATE WITH SUPABASE
   try {
@@ -167,13 +185,34 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Record failed login attempt
-      const lockoutResult = recordFailedLogin(email);
+      // Record failed password authentication in login_activity.
+const reason =
+  error.code === "email_not_confirmed"
+    ? "email_unconfirmed"
+    : "invalid_credentials";
 
-      auditAuthFailure(request, "auth.login", {
-        email,
-        reason: error.code || "invalid_credentials",
-      });
+try {
+  await recordLoginFailure({
+    email,
+    reason,
+    device: getRequestDevice(request),
+  });
+} catch (activityError) {
+  // Keep the existing login response unchanged.
+  // Never log the email or password here.
+  console.error(
+    "[login] failed-attempt activity write failed:",
+    activityError
+  );
+}
+
+// Existing progressive lockout logic remains unchanged.
+const lockoutResult = recordFailedLogin(email);
+
+auditAuthFailure(request, "auth.login", {
+  email,
+  reason: error.code || "invalid_credentials",
+});
 
       maybeRunSecurityScan().catch(() => {});
 
@@ -250,14 +289,34 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 8. CLEAN SUCCESS
-    auditAuthSuccess(request, "auth.login", data.user!.id, {
-      email,
-    });
+    // 8. REGISTER VERIFIED SESSION
+try {
+  await registerVerifiedSession(supabase, request);
+} catch (registrationError) {
+  console.error(
+    "[login] session registration failed:",
+    registrationError
+  );
 
-    return NextResponse.json({
-      success: true,
-    });
+  await supabase.auth.signOut({ scope: "local" });
+
+  return NextResponse.json(
+    {
+      error: msg(E.AUTH_LOGIN_SERVER_ERROR),
+      code: "AUTH_LOGIN_SERVER_ERROR",
+    },
+    { status: 503 }
+  );
+}
+
+// 9. CLEAN SUCCESS
+auditAuthSuccess(request, "auth.login", data.user!.id, {
+  email,
+});
+
+return NextResponse.json({
+  success: true,
+});
   } catch (err) {
     console.error("[login] Unexpected error:", err);
 

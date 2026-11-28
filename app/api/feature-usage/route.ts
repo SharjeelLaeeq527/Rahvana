@@ -7,6 +7,7 @@ import { getEffectiveEntitlement, getCreditPools, addonPoolKey } from "@/lib/ent
 import { resolveUsageTier } from "@/lib/usage/resolveUsageTier";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getPhotoBoothPack, spendPhotoBoothPhoto } from "@/lib/wallet/photoBoothPack";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 // The tier is always resolved server-side (lib/usage/resolveUsageTier.ts). A
 // `tier` sent by the client is ignored: it used to be trusted, which let any
@@ -23,18 +24,9 @@ export async function GET(request: Request) {
   try {
     const supabase = await createClient();
 
-    // Authenticate user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json(
-        { success: false, message: msg(E.AUTH_UNAUTHORIZED) },
-        { status: 401 }
-      );
-    }
+    const sessionGuard = await requireActiveSession(supabase, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const { searchParams } = new URL(request.url);
     const feature = searchParams.get("feature");
@@ -114,15 +106,9 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient();
 
-    // Authenticate user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     // Parse request
     const body = await request.json();

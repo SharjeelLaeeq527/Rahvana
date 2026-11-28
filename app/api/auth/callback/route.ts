@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { safeRedirectPath } from "@/lib/security/safeRedirect";
 import { isStagingEmailAllowed } from "@/lib/security/staging-access";
+import { createSecurityAdmin } from "@/lib/security/security-admin";
+import { getSecurityContext } from "@/lib/security/security-context";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -33,6 +35,33 @@ export async function GET(request: Request) {
         if (!isStagingEmailAllowed(user.email)) {
           await supabase.auth.signOut();
           const response = NextResponse.redirect(`${origin}/login?error=staging_access_denied`);
+          response.cookies.delete("oauth_redirect");
+          return response;
+        }
+
+        try {
+          const context = await getSecurityContext(supabase, request);
+          if (!context || context.user.id !== user.id) {
+            throw new Error("Verified OAuth session required.");
+          }
+
+          // OAuth intentionally records the session without the app's MFA gate.
+          const { data: recordId, error: registrationError } =
+            await createSecurityAdmin().rpc("register_security_session", {
+              p_user_id: context.user.id,
+              p_session_id: context.sessionId,
+              p_device_name: context.device.deviceName,
+              p_browser: context.device.browser,
+            });
+          if (registrationError || typeof recordId !== "string") {
+            throw new Error(
+              `Session registration failed: ${registrationError?.message ?? "invalid response"}`
+            );
+          }
+        } catch (registrationError) {
+          console.error("[auth/callback] session registration failed:", registrationError);
+          await supabase.auth.signOut({ scope: "local" });
+          const response = NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
           response.cookies.delete("oauth_redirect");
           return response;
         }

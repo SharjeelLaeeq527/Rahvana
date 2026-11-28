@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { E, msg } from "@/lib/errors";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,16 +16,9 @@ export async function GET(req: NextRequest) {
 
     // 1. Authenticate user session
     const authClient = await createClient();
-
-    const {
-      data: { user },
-      error: userError,
-    } = await authClient.auth.getUser();
-
-    if (userError || !user) {
-      console.error("[services-status] Unauthorized:", userError);
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(authClient, req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const userId = user.id;
 
