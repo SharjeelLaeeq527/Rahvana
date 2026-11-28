@@ -29,6 +29,7 @@ export default function FeedbackButton({
   const [bottomOffset, setBottomOffset] = useState(16);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
+  const isHomePage = /^\/(?:home)?$/.test(pathname ?? "");
   const [hideForHeroAnim, setHideForHeroAnim] = useState(true);
   const [heroAnimationResolved, setHeroAnimationResolved] = useState(false);
   const [feedback, setFeedback] = useState({
@@ -41,16 +42,14 @@ export default function FeedbackButton({
   useEffect(() => {
     if (typeof window === "undefined" || typeof document === "undefined") return;
 
-    const heroPlaying = document.documentElement.dataset.heroAnimationPlaying;
-    const isHomePage = /^\/(?:home)?$/.test(window.location.pathname);
-
     if (!isHomePage) {
       setHideForHeroAnim(false);
       return;
     }
 
+    const heroPlaying = document.documentElement.dataset.heroAnimationPlaying;
     setHideForHeroAnim(heroPlaying !== "false");
-  }, [pathname]);
+  }, [isHomePage]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
@@ -195,7 +194,7 @@ export default function FeedbackButton({
   // while the intro cinematic sequence is still running.
   useEffect(() => {
     const handleHeroAnimPlaying = (event: Event) => {
-      if (event instanceof CustomEvent) {
+      if (isHomePage && event instanceof CustomEvent) {
         const playing = event.detail.playing;
         setHideForHeroAnim(Boolean(playing));
         if (playing === false) setHeroAnimationResolved(true);
@@ -208,11 +207,13 @@ export default function FeedbackButton({
       if (typeof window !== "undefined" && typeof document !== "undefined") {
         const winFlag = (window as any).__heroAnimationPlaying;
         const dataFlag = document.documentElement.dataset.heroAnimationPlaying;
-        let initPlaying: boolean | null = null;
+        let initPlaying: boolean | null = isHomePage ? null : false;
 
-        if (typeof winFlag === "boolean") initPlaying = winFlag;
-        else if (dataFlag === "true") initPlaying = true;
-        else if (dataFlag === "false") initPlaying = false;
+        if (isHomePage) {
+          if (typeof winFlag === "boolean") initPlaying = winFlag;
+          else if (dataFlag === "true") initPlaying = true;
+          else if (dataFlag === "false") initPlaying = false;
+        }
 
         // Default to hiding while unsure (treat unknown as playing)
         if (initPlaying === null) initPlaying = true;
@@ -228,7 +229,7 @@ export default function FeedbackButton({
     return () => {
       window.removeEventListener("hero-animation-playing", handleHeroAnimPlaying);
     };
-  }, []);
+  }, [isHomePage]);
 
   // Update step if it changes externally while modal is open
   useEffect(() => {
@@ -376,9 +377,9 @@ export default function FeedbackButton({
         <button
           ref={buttonRef}
           onClick={() => setIsOpen(true)}
-          className="group fixed right-3 z-40 inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-full text-white shadow-lg transition-[background-color,box-shadow] duration-200 ease-out [will-change:transform] [contain:layout] [backface-visibility:hidden] sm:right-6 md:hover:w-[190px] md:hover:scale-[1.03] md:hover:gap-2 md:hover:px-4 md:focus:w-[190px] md:focus:gap-2 md:focus:px-4 md:active:w-[190px] md:active:gap-2 md:active:px-4"
+          className="group fixed right-3 z-40 bottom-10 max-[425px]:bottom-16 inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-full text-white shadow-lg transition-[background-color,box-shadow] duration-200 ease-out [will-change:transform] [contain:layout] [backface-visibility:hidden] sm:right-6 md:hover:w-[190px] md:hover:scale-[1.03] md:hover:gap-2 md:hover:px-4 md:focus:w-[190px] md:focus:gap-2 md:focus:px-4 md:active:w-[190px] md:active:gap-2 md:active:px-4"
           style={{
-            bottom: "calc(16px + env(safe-area-inset-bottom))",
+            // bottom: "calc(16px + env(safe-area-inset-bottom))",
             backgroundColor: inHero
               ? "var(--feedback-button-hero, #71a1a1)"
               : "var(--feedback-button-bg, #0d7377)",
