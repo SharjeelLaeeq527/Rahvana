@@ -13,12 +13,16 @@ import {
 } from "@/lib/interview-prep/service";
 import type { InterviewAnswer } from "@/lib/interview-prep/types";
 import { getSessionAnswersDB, getInterviewResultsDB } from "@/lib/interview-prep/data-access";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const { sessionId } = await params;
     const body = await request.json();
     const { action, answers } = body;
@@ -68,6 +72,9 @@ export async function GET(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(_request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const { sessionId } = await params;
 
     if (!sessionId || sessionId === "undefined") {

@@ -25,6 +25,7 @@ import { journeyConfigKeyFor } from "@/lib/journey/journeyConfig";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { hasPaidTierHint, verifyJourneyTierWithStripe } from "@/lib/plan/journeyTierRepair";
 import type { CandidateProfile } from "@/types/candidate";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 // ── In-memory server cache (resets on cold start, fine for Vercel) ───────────
 const serverCache = new Map<string, { data: any; cachedAt: number }>();
@@ -94,13 +95,9 @@ export async function POST(req: NextRequest) {
   try {
     // ── Auth ──────────────────────────────────────────────────────────────────
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     // Shared context to avoid redundant auth calls in data-access
     const dbClient = { supabase, user };

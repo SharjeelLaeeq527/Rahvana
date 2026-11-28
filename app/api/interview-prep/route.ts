@@ -21,10 +21,10 @@ import {
 } from "@/lib/interview-prep/purchase-validation";
 import { getInterviewSessionByCategory } from "@/lib/interview-prep/data-access";
 import { isMultiCandidateCategorySlug } from "@/lib/interview-prep/journey-category-map";
-import { createClient } from "@/lib/supabase/server";
 import { getServiceRoleClient } from "@/lib/api/authGuards";
 import { topupAmountForDeficit } from "@/lib/wallet/launch";
 import { E, msg } from "@/lib/errors";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 /**
  * POST /api/interview-prep
@@ -43,6 +43,9 @@ import { E, msg } from "@/lib/errors";
  */
 export async function POST(request: NextRequest) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const body = await request.json();
     const { category_slug, user_email, user_name, source, journey_id, journey_category, candidate_id, forceNew } =
       body ?? {};
@@ -67,14 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user for authentication
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { user } = sessionGuard.context;
 
     if (source === "journey") {
       const journeyCheck = await validateJourneySessionCreation(user.id, {
@@ -305,6 +301,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const session = await getInterviewSession(sessionId);
 
     if (!session) {
