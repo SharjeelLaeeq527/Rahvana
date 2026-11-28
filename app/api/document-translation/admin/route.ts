@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { E, msg } from "@/lib/errors";
 import { requireAdmin } from "@/lib/api/authGuards";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 function getStorageSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -15,6 +16,9 @@ function getStorageSupabase() {
 
 export async function GET(request: NextRequest) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     // AUTHZ: admin only (this route uses the service role → bypasses RLS)
     const { isAdmin, error: authError } = await requireAdmin();
     if (!isAdmin) {

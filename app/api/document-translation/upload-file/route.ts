@@ -9,9 +9,13 @@ import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 import { validateUploadedFile } from "@/lib/security/file-content";
 import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 export async function POST(request: NextRequest) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const supabase = await createClient();
 
     const {

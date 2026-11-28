@@ -3,9 +3,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 export async function GET(request: NextRequest) {
   try {
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+
     const supabase = await createClient();
 
     // Get authenticated user
