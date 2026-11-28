@@ -469,7 +469,7 @@ export default function CompleteProfileForm() {
             />
 
             {!formData.sameAsCurrentAddress && (
-              <div className="space-y-4 mt-4 p-4 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="space-y-4 mt-4 p-4 bg-muted/40 rounded-lg border border-border">
                 <FormField
                   label="Street Address"
                   value={formData.mailingAddress?.street || ""}
@@ -515,8 +515,8 @@ export default function CompleteProfileForm() {
       description: "Information for spousal visa forms",
       render: () => (
         <div className="space-y-5">
-          <div className="bg-slate-50 border border-slate-200 rounded-md px-3 py-2.5">
-            <p className="text-xs text-slate-600">
+          <div className="bg-muted/40 border border-border rounded-md px-3 py-2.5">
+            <p className="text-xs text-muted-foreground">
               This information helps us auto-fill spousal visa forms (I-130). Skip if not
               applicable.
             </p>
@@ -858,8 +858,8 @@ export default function CompleteProfileForm() {
       description: "Optional: Helps us auto-fill your visa application forms",
       render: () => (
         <div className="space-y-5">
-          <div className="bg-slate-50 border border-slate-200 rounded-md px-3 py-2.5 mb-4">
-            <p className="text-xs text-slate-600">
+          <div className="bg-muted/40 border border-border rounded-md px-3 py-2.5 mb-4">
+            <p className="text-xs text-muted-foreground">
               This information is optional but helps us auto-fill visa forms. Skip if you&apos;re
               not currently applying for a visa.
             </p>
@@ -1059,7 +1059,7 @@ export default function CompleteProfileForm() {
           </FormSection>
 
           <FormSection title="Immigration History">
-            <div className="space-y-3 bg-slate-50 rounded-md px-4 py-3 border border-slate-200">
+            <div className="space-y-3 bg-muted/40 rounded-md px-4 py-3 border border-border">
               <FormCheckbox
                 id="prevVisa"
                 label="I have applied for a US visa before"
@@ -1110,7 +1110,7 @@ export default function CompleteProfileForm() {
             title="Relationship Evidence"
             description="Do you have these proofs available?"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 rounded-md px-4 py-3 border border-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-muted/40 rounded-md px-4 py-3 border border-border">
               <FormCheckbox
                 id="cohabitation"
                 label="Proof of living together (Lease/Deed)"
@@ -1150,7 +1150,7 @@ export default function CompleteProfileForm() {
             title="Document Readiness"
             description="Check documents you currently have available"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 rounded-md px-4 py-3 border border-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-muted/40 rounded-md px-4 py-3 border border-border">
               <FormCheckbox
                 id="hasPassport"
                 label="Valid Passport"
