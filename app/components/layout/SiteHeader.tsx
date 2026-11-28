@@ -315,7 +315,7 @@ export function SiteHeader({
 
   const MOBILE_ICONS: Record<string, React.ReactNode> = {
     journeys: (
-      <div className="flex h-[55px] w-[55px] items-center justify-center rounded-2xl border border-line bg-surface-raised shadow-xs">
+      <div className="border-line bg-surface-raised flex h-[55px] w-[55px] items-center justify-center rounded-2xl border shadow-xs">
         <Image
           src="/icons/visa-journeys.svg"
           alt="Journeys icon"
@@ -326,7 +326,7 @@ export function SiteHeader({
       </div>
     ),
     tools: (
-      <div className="flex h-[55px] w-[55px] items-center justify-center rounded-2xl border border-line bg-surface-raised shadow-xs">
+      <div className="border-line bg-surface-raised flex h-[55px] w-[55px] items-center justify-center rounded-2xl border shadow-xs">
         <Image
           src="/icons/visa-application-tools-guides.svg"
           alt="Tools icon"
@@ -337,7 +337,7 @@ export function SiteHeader({
       </div>
     ),
     guides: (
-      <div className="flex h-[55px] w-[55px] items-center justify-center rounded-2xl border border-line bg-surface-raised shadow-xs">
+      <div className="border-line bg-surface-raised flex h-[55px] w-[55px] items-center justify-center rounded-2xl border shadow-xs">
         <Image
           src="/icons/passport-guide.svg"
           alt="Guides icon"
@@ -348,7 +348,7 @@ export function SiteHeader({
       </div>
     ),
     services: (
-      <div className="flex h-[55px] w-[55px] items-center justify-center rounded-2xl border border-line bg-surface-raised shadow-xs">
+      <div className="border-line bg-surface-raised flex h-[55px] w-[55px] items-center justify-center rounded-2xl border shadow-xs">
         <Image
           src="/icons/book-consultation.svg"
           alt="Services icon"
@@ -374,8 +374,7 @@ export function SiteHeader({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [quickAccessOpen, setQuickAccessOpen] = useState(false);
   const [mobileUtilitiesOpen, setMobileUtilitiesOpen] = useState(false);
-  const [mobileNavigationMode, setMobileNavigationMode] =
-    useState<MobileNavigationMode>("bottom");
+  const [mobileNavigationMode, setMobileNavigationMode] = useState<MobileNavigationMode>("bottom");
   const mobileSwipeStartX = useRef<number | null>(null);
   const mobileUtilitiesRef = useRef<HTMLDivElement>(null);
   const quickAccessRef = useRef<HTMLDivElement>(null);
@@ -894,7 +893,7 @@ export function SiteHeader({
     <header
       onTouchStart={handleMobileSwipeStart}
       onTouchEnd={handleMobileSwipeEnd}
-      className={`fixed top-0 right-0 left-0 z-100 w-full transition-all duration-300 max-767:pb-4 ${
+      className={`max-767:pb-4 fixed top-0 right-0 left-0 z-100 w-full transition-all duration-300 ${
         isHomeHeroState || isHomeHeroP2State || isHomepageHeroState
           ? "border-none bg-transparent py-4 shadow-none"
           : "bg-background py-2 shadow-lg"
@@ -945,9 +944,7 @@ export function SiteHeader({
               xmlns="http://www.w3.org/2000/svg"
               viewBox="152 220 710 215"
               className={`h-8 w-auto fill-current ${
-                isHomeHeroState
-                  ? "text-white drop-shadow-sm"
-                  : "text-brand dark:text-white"
+                isHomeHeroState ? "text-white drop-shadow-sm" : "text-brand dark:text-white"
               }`}
             >
               <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
@@ -968,7 +965,7 @@ export function SiteHeader({
                   <Compass className="h-3.5 w-3.5 animate-pulse" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs leading-tight font-bold text-strong">
+                  <span className="text-strong text-xs leading-tight font-bold">
                     {getJourneyDisplayTitle(journeyCategory, journeySlug, pathname)}
                   </span>
                   {activeCandidate && (activeCandidate.fullName || activeCandidate.label) && (
@@ -1017,13 +1014,13 @@ export function SiteHeader({
                   className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
                     isHomeHeroState
                       ? isActive("resources") || activeMenu === "resources"
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                        ? "bg-muted text-brand"
+                        : "text-muted-foreground hover:bg-muted hover:text-brand"
                       : isHomeHeroP2State || isHomepageHeroState
-                        ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                        ? "hover:text-brand text-[#3fb8bc] hover:bg-[#0d7377]/10"
                         : isActive("resources") || activeMenu === "resources"
-                          ? "bg-muted text-[#0d7377]"
-                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                          ? "bg-muted text-brand"
+                          : "text-muted-foreground hover:bg-muted hover:text-brand"
                   }`}
                 >
                   My Resources
@@ -1044,12 +1041,12 @@ export function SiteHeader({
                   className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
                     isHomeHeroState
                       ? isActive("blog", "/blog")
-                        ? "bg-muted text-[#0d7377]"
+                        ? "bg-muted text-brand"
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                       : isHomeHeroP2State || isHomepageHeroState
-                        ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
+                        ? "hover:text-brand text-[#3fb8bc] hover:bg-[#0d7377]/8"
                         : isActive("blog", "/blog")
-                          ? "bg-muted text-[#0d7377]"
+                          ? "bg-muted text-brand"
                           : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                   }`}
                 >
@@ -1063,12 +1060,12 @@ export function SiteHeader({
                   className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
                     isHomeHeroState
                       ? isActive("about", "/about")
-                        ? "bg-muted text-[#0d7377]"
+                        ? "bg-muted text-brand"
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                       : isHomeHeroP2State || isHomepageHeroState
-                        ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
+                        ? "hover:text-brand text-[#3fb8bc] hover:bg-[#0d7377]/8"
                         : isActive("about", "/about")
-                          ? "bg-muted text-[#0d7377]"
+                          ? "bg-muted text-brand"
                           : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                   }`}
                 >
@@ -1083,12 +1080,12 @@ export function SiteHeader({
                   className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
                     isHomeHeroState
                       ? isActive("pricing", "/pricing")
-                        ? "bg-muted text-[#0d7377]"
+                        ? "bg-muted text-brand"
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                       : isHomeHeroP2State || isHomepageHeroState
-                        ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
+                        ? "hover:text-brand text-[#3fb8bc] hover:bg-[#0d7377]/8"
                         : isActive("pricing", "/pricing")
-                          ? "bg-muted text-[#0d7377]"
+                          ? "bg-muted text-brand"
                           : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                   }`}
                 >
@@ -1103,12 +1100,12 @@ export function SiteHeader({
                     className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
                       isHomeHeroState
                         ? isActive("faq")
-                          ? "bg-muted text-[#0d7377]"
+                          ? "bg-muted text-brand"
                           : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                         : isHomeHeroP2State || isHomepageHeroState
-                          ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                          ? "hover:text-brand text-[#3fb8bc] hover:bg-[#0d7377]/10"
                           : isActive("faq")
-                            ? "bg-muted text-[#0d7377]"
+                            ? "bg-muted text-brand"
                             : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                     }`}
                   >
@@ -1123,12 +1120,12 @@ export function SiteHeader({
                   className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
                     isHomeHeroState
                       ? isActive("contact")
-                        ? "bg-muted text-[#0d7377]"
+                        ? "bg-muted text-brand"
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                       : isHomeHeroP2State || isHomepageHeroState
-                        ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                        ? "hover:text-brand text-[#3fb8bc] hover:bg-[#0d7377]/10"
                         : isActive("contact")
-                          ? "bg-muted text-[#0d7377]"
+                          ? "bg-muted text-brand"
                           : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                   }`}
                 >
@@ -1164,22 +1161,22 @@ export function SiteHeader({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.15 }}
-              className="absolute top-full mt-2 rounded-xl border border-line bg-surface-raised p-4 shadow-xl"
+              className="border-line bg-surface-raised absolute top-full mt-2 rounded-xl border p-4 shadow-xl"
               style={{ width: "200px", left: `${arrowOffset - 90}px` }}
             >
               <div>
                 <Link
                   href="/resources?tab=toolbox"
                   onClick={handleLinkClick}
-                  className="text-muted-foreground hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors hover:text-brand"
+                  className="text-muted-foreground hover:bg-muted hover:text-brand flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors"
                 >
-                  <Wrench className="h-4 w-4 text-[#0d7377] dark:text-teal-400" />
+                  <Wrench className="dark:text-brand h-4 w-4 text-[#0d7377]" />
                   My Tools
                 </Link>
                 <Link
                   href="/resources?tab=services"
                   onClick={handleLinkClick}
-                  className="text-muted-foreground hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors hover:text-[#0d7377]"
+                  className="text-muted-foreground hover:bg-muted hover:text-brand flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors"
                 >
                   <Briefcase className="h-4 w-4 text-amber-500 dark:text-amber-400" />
                   My Services
@@ -1187,7 +1184,7 @@ export function SiteHeader({
                 <Link
                   href="/resources?tab=guides"
                   onClick={handleLinkClick}
-                  className="text-muted-foreground hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors hover:text-[#0d7377]"
+                  className="text-muted-foreground hover:bg-muted hover:text-brand flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors"
                 >
                   <BookOpen className="h-4 w-4 text-cyan-500 dark:text-cyan-400" />
                   My Guides
@@ -1231,15 +1228,16 @@ export function SiteHeader({
             ref={mobileUtilitiesRef}
             className={`flex items-center gap-1.5 ${
               mobileNavigationMode === "bottom"
-                ? "mobile-bottom-nav max-[640px]:fixed max-[640px]:right-0 max-[640px]:bottom-0 max-[640px]:left-0 max-[640px]:z-100 max-[640px]:gap-0 max-[640px]:rounded-t-2xl max-[640px]:border-x-0 max-[640px]:border-b-0 max-[640px]:border-t max-[640px]:border-teal-700/20 max-[640px]:bg-[#e8f4f3]/95 max-[640px]:px-3 max-[640px]:pr-14 max-[640px]:pt-2 max-[640px]:pb-[calc(0.5rem+env(safe-area-inset-bottom))] max-[640px]:shadow-[0_-8px_24px_rgba(13,115,119,0.14)] max-[640px]:backdrop-blur-xl max-[640px]:[&>*]:flex max-[640px]:[&>*]:flex-1 max-[640px]:[&>*]:justify-center dark:max-[640px]:border-slate-700/70 dark:max-[640px]:bg-[#102f33]/90"
+                ? "mobile-bottom-nav max-[640px]:fixed max-[640px]:right-0 max-[640px]:bottom-0 max-[640px]:left-0 max-[640px]:z-100 max-[640px]:gap-0 max-[640px]:rounded-t-2xl max-[640px]:border-x-0 max-[640px]:border-t max-[640px]:border-b-0 max-[640px]:border-teal-700/20 max-[640px]:bg-[#e8f4f3]/95 max-[640px]:px-3 max-[640px]:pt-2 max-[640px]:pr-14 max-[640px]:pb-[calc(0.5rem+env(safe-area-inset-bottom))] max-[640px]:shadow-[0_-8px_24px_rgba(13,115,119,0.14)] max-[640px]:backdrop-blur-xl dark:max-[640px]:border-slate-700/70 dark:max-[640px]:bg-[#102f33]/90 max-[640px]:[&>*]:flex max-[640px]:[&>*]:flex-1 max-[640px]:[&>*]:justify-center"
                 : mobileNavigationMode === "swipe"
-                  ? `max-[767px]:fixed max-[767px]:top-1/2 max-[767px]:right-0 max-[767px]:left-auto max-[767px]:-translate-y-1/2 max-[767px]:flex max-[767px]:flex-col max-[767px]:rounded-l-2xl max-[767px]:border max-[767px]:border-r-0 max-[767px]:border-white/60 max-[767px]:bg-white/90 max-[767px]:px-2 max-[767px]:py-3 max-[767px]:shadow-lg max-[767px]:backdrop-blur-md dark:max-[767px]:border-slate-700/70 dark:max-[767px]:bg-slate-950/90 max-[767px]:transition-transform max-[767px]:duration-300 ${mobileUtilitiesOpen ? "max-[767px]:translate-x-0" : "max-[767px]:translate-x-full max-[767px]:pointer-events-none"}`
+                  ? `max-[767px]:fixed max-[767px]:top-1/2 max-[767px]:right-0 max-[767px]:left-auto max-[767px]:flex max-[767px]:-translate-y-1/2 max-[767px]:flex-col max-[767px]:rounded-l-2xl max-[767px]:border max-[767px]:border-r-0 max-[767px]:border-white/60 max-[767px]:bg-white/90 max-[767px]:px-2 max-[767px]:py-3 max-[767px]:shadow-lg max-[767px]:backdrop-blur-md max-[767px]:transition-transform max-[767px]:duration-300 dark:max-[767px]:border-slate-700/70 dark:max-[767px]:bg-slate-950/90 ${mobileUtilitiesOpen ? "max-[767px]:translate-x-0" : "max-[767px]:pointer-events-none max-[767px]:translate-x-full"}`
                   : `max-[767px]:absolute max-[767px]:top-[52px] max-[767px]:right-4 max-[767px]:left-4 max-[767px]:justify-between max-[767px]:rounded-2xl max-[767px]:border max-[767px]:border-white/60 max-[767px]:bg-white/80 max-[767px]:px-2 max-[767px]:py-1.5 max-[767px]:shadow-lg max-[767px]:backdrop-blur-md dark:max-[767px]:border-slate-700/70 dark:max-[767px]:bg-slate-950/75 ${mobileUtilitiesOpen ? "max-[767px]:flex" : "max-[767px]:hidden"}`
             }`}
           >
             {isLoading && !resolvedUser
               ? null
-              : isSignedIn && !isJourneyEnvironment && (
+              : isSignedIn &&
+                !isJourneyEnvironment && (
                   <WalletBalancePill
                     tone={isHomeHeroState ? "hero" : "default"}
                     compact={mobileNavigationMode === "swipe"}
@@ -1249,450 +1247,453 @@ export function SiteHeader({
             {isLoading && !resolvedUser
               ? null
               : isSignedIn && (
-                <div className="relative" ref={notifRef}>
-                  <HydrationSafeButton
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Notifications"
-                    onClick={handleBellClick}
-                    className={`relative rounded-md border-0 shadow-none transition-colors ${
-                      isHomeHeroState
-                        ? "text-white"
-                        : isHomeHeroP2State
-                          ? "text-[#0d7377]"
-                          : "text-rahvana-primary"
-                    }`}
-                    style={{
-                      padding: 0,
-                      width: 40,
-                      height: 40,
-                      background: "none",
-                      boxShadow: "none",
-                      border: "none",
-                      borderRadius: "50%",
-                    }}
-                  >
-                    <div className="relative inline-flex">
-                      <Bell
-                        className="h-5 w-5"
-                        aria-hidden="true"
-                        style={
-                          isHomeHeroState
-                            ? { color: "#305d5aff" }
-                            : isHomeHeroP2State
-                              ? { color: "#0d7377" }
-                              : { color: "var(--rahvana-primary, #0d7377)" }
-                        }
-                      />
-                      {unreadCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full border border-white/50 bg-red-500 text-[9px] font-medium text-white">
-                          {unreadCount > 9 ? "9+" : unreadCount}
-                        </span>
-                      )}
-                    </div>
-                  </HydrationSafeButton>
-
-                  <AnimatePresence>
-                    {notificationsOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 8 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 8 }}
-                        transition={{ duration: 0.18, ease: "easeOut" }}
-                        className={`fixed ${mobilePopoverPositionClass} z-9999 mt-1 w-[calc(100vw-32px)] max-w-sm overflow-hidden rounded-xl border border-line bg-surface-raised shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-80 md:origin-top-right md:-translate-x-0`}
-                      >
-                        {/* Header */}
-                        <div className="border-border bg-muted/30 flex items-center justify-between border-b px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <Bell className="h-4 w-4 text-brand" />
-                            <span className="text-foreground text-sm font-bold">Notifications</span>
-                          </div>
-                          <span className="text-muted-foreground bg-muted rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase">
-                            {unreadCount > 0 ? `${unreadCount} New` : "0 New"}
+                  <div className="relative" ref={notifRef}>
+                    <HydrationSafeButton
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Notifications"
+                      onClick={handleBellClick}
+                      className={`relative rounded-md border-0 shadow-none transition-colors ${
+                        isHomeHeroState
+                          ? "text-white"
+                          : isHomeHeroP2State
+                            ? "text-[#0d7377]"
+                            : "text-rahvana-primary"
+                      }`}
+                      style={{
+                        padding: 0,
+                        width: 40,
+                        height: 40,
+                        background: "none",
+                        boxShadow: "none",
+                        border: "none",
+                        borderRadius: "50%",
+                      }}
+                    >
+                      <div className="relative inline-flex">
+                        <Bell
+                          className="h-5 w-5"
+                          aria-hidden="true"
+                          style={
+                            isHomeHeroState
+                              ? { color: "#305d5aff" }
+                              : isHomeHeroP2State
+                                ? { color: "#0d7377" }
+                                : { color: "var(--rahvana-primary, #0d7377)" }
+                          }
+                        />
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full border border-white/50 bg-red-500 text-[9px] font-medium text-white">
+                            {unreadCount > 9 ? "9+" : unreadCount}
                           </span>
-                        </div>
+                        )}
+                      </div>
+                    </HydrationSafeButton>
 
-                        {/* Body */}
-                        <div ref={notifScrollRef} className="max-h-[340px] overflow-y-auto">
-                          {notifList.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center gap-4 px-6 py-10">
-                              <div className="bg-muted flex h-14 w-14 items-center justify-center rounded-2xl">
-                                <BellOff className="text-muted-foreground/50 h-6 w-6" />
-                              </div>
-                              <div className="space-y-1 text-center">
-                                <p className="text-foreground text-sm font-semibold">
-                                  All caught up!
-                                </p>
-                                <p className="text-muted-foreground mx-auto max-w-[180px] text-xs leading-relaxed">
-                                  No pending notifications right now.
-                                </p>
-                              </div>
+                    <AnimatePresence>
+                      {notificationsOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                          className={`fixed ${mobilePopoverPositionClass} border-line bg-surface-raised z-9999 mt-1 w-[calc(100vw-32px)] max-w-sm overflow-hidden rounded-xl border shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-80 md:origin-top-right md:-translate-x-0`}
+                        >
+                          {/* Header */}
+                          <div className="border-border bg-muted/30 flex items-center justify-between border-b px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <Bell className="text-brand h-4 w-4" />
+                              <span className="text-foreground text-sm font-bold">
+                                Notifications
+                              </span>
                             </div>
-                          ) : (
-                            <>
-                              <div className="divide-border divide-y">
-                                {notifList.slice(0, visibleNotifCount).map((n: any) => {
-                                  const isExpanded = expandedNotifs.has(n.id);
-                                  const bodyLong = n.body && n.body.length > 80;
-                                  const isRead =
-                                    n._source === "app" ? !!n.is_read : readIds.has(n.id);
-                                  const timeLabel = formatNotifTime(n.created_at);
-                                  return (
-                                    <div
-                                      key={n.id}
-                                      className={`flex items-start gap-3 px-4 py-3 transition-colors ${
-                                        !isRead
-                                          ? n.priority === "critical" || n.priority === "high"
-                                            ? "bg-orange-50 hover:bg-orange-100/60"
-                                            : "bg-[#f0f7ff] hover:bg-[#e8f2fb]"
-                                          : "hover:bg-muted/30 bg-surface-raised"
-                                      }`}
-                                    >
-                                      {/* Unread dot — only when unread */}
-                                      <div className="mt-1.5 h-1.5 w-1.5 shrink-0">
-                                        {!isRead && (
-                                          <div
-                                            className={`h-1.5 w-1.5 rounded-full ${n.priority === "critical" ? "bg-red-500" : n.priority === "high" ? "bg-orange-400" : "bg-brand"}`}
-                                          />
-                                        )}
-                                      </div>
-                                      <div className="min-w-0 flex-1">
-                                        {(n.candidate_role || n.candidate_name) && (
-                                          <span className="mb-1 inline-flex items-center gap-1 rounded-full border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wider text-teal-700 uppercase dark:text-teal-300">
-                                            <span className="h-1.5 w-1.5 rounded-full bg-teal-600 dark:bg-teal-400" />
-                                            {n.candidate_name &&
-                                            n.candidate_name !== n.candidate_role
-                                              ? `${n.candidate_role || "Beneficiary"}: ${n.candidate_name}`
-                                              : n.candidate_role || "Beneficiary"}
-                                          </span>
-                                        )}
-                                        <div className="flex items-start justify-between gap-2">
-                                          <p
-                                            className={`text-foreground text-[12px] ${isRead ? "font-medium opacity-70" : "font-bold"}`}
-                                          >
-                                            {n.title}
-                                          </p>
-                                          {timeLabel && (
-                                            <span className="text-muted-foreground/70 mt-0.5 shrink-0 text-[10px] whitespace-nowrap">
-                                              {timeLabel}
-                                            </span>
+                            <span className="text-muted-foreground bg-muted rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase">
+                              {unreadCount > 0 ? `${unreadCount} New` : "0 New"}
+                            </span>
+                          </div>
+
+                          {/* Body */}
+                          <div ref={notifScrollRef} className="max-h-[340px] overflow-y-auto">
+                            {notifList.length === 0 ? (
+                              <div className="flex flex-col items-center justify-center gap-4 px-6 py-10">
+                                <div className="bg-muted flex h-14 w-14 items-center justify-center rounded-2xl">
+                                  <BellOff className="text-muted-foreground/50 h-6 w-6" />
+                                </div>
+                                <div className="space-y-1 text-center">
+                                  <p className="text-foreground text-sm font-semibold">
+                                    All caught up!
+                                  </p>
+                                  <p className="text-muted-foreground mx-auto max-w-[180px] text-xs leading-relaxed">
+                                    No pending notifications right now.
+                                  </p>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="divide-border divide-y">
+                                  {notifList.slice(0, visibleNotifCount).map((n: any) => {
+                                    const isExpanded = expandedNotifs.has(n.id);
+                                    const bodyLong = n.body && n.body.length > 80;
+                                    const isRead =
+                                      n._source === "app" ? !!n.is_read : readIds.has(n.id);
+                                    const timeLabel = formatNotifTime(n.created_at);
+                                    return (
+                                      <div
+                                        key={n.id}
+                                        className={`flex items-start gap-3 px-4 py-3 transition-colors ${
+                                          !isRead
+                                            ? n.priority === "critical" || n.priority === "high"
+                                              ? "bg-orange-50 hover:bg-orange-100/60"
+                                              : "bg-[#f0f7ff] hover:bg-[#e8f2fb]"
+                                            : "hover:bg-muted/30 bg-surface-raised"
+                                        }`}
+                                      >
+                                        {/* Unread dot — only when unread */}
+                                        <div className="mt-1.5 h-1.5 w-1.5 shrink-0">
+                                          {!isRead && (
+                                            <div
+                                              className={`h-1.5 w-1.5 rounded-full ${n.priority === "critical" ? "bg-red-500" : n.priority === "high" ? "bg-orange-400" : "bg-brand"}`}
+                                            />
                                           )}
                                         </div>
-                                        <p
-                                          className={`mt-0.5 text-[11px] leading-relaxed ${isRead ? "text-muted-foreground/60" : "text-muted-foreground"} ${isExpanded ? "" : "line-clamp-2"}`}
-                                        >
-                                          {n.body}
-                                        </p>
-                                        {bodyLong && (
-                                          <button
-                                            onClick={() => toggleExpand(n.id)}
-                                            className="mt-0.5 text-[10px] font-bold text-[#0d7377] hover:underline"
-                                          >
-                                            {isExpanded ? "Show less ↑" : "Read more ↓"}
-                                          </button>
-                                        )}
-                                        {!isRead && (
-                                          <button
-                                            onClick={() => markOneRead(n.id)}
-                                            className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-[#0d7377] hover:underline"
-                                          >
-                                            <span className="flex h-3 w-3 items-center justify-center rounded-full border border-[#0d7377] text-[7px]">
-                                              ✓
+                                        <div className="min-w-0 flex-1">
+                                          {(n.candidate_role || n.candidate_name) && (
+                                            <span className="mb-1 inline-flex items-center gap-1 rounded-full border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wider text-teal-700 uppercase dark:text-teal-300">
+                                              <span className="h-1.5 w-1.5 rounded-full bg-teal-600 dark:bg-teal-400" />
+                                              {n.candidate_name &&
+                                              n.candidate_name !== n.candidate_role
+                                                ? `${n.candidate_role || "Beneficiary"}: ${n.candidate_name}`
+                                                : n.candidate_role || "Beneficiary"}
                                             </span>
-                                            Mark as read
-                                          </button>
-                                        )}
-                                        {n.action_label && n.action_url && (
-                                          <a
-                                            href={n.action_url}
-                                            className="mt-1 inline-block text-[10px] font-black tracking-wide text-[#0d7377] uppercase hover:underline"
+                                          )}
+                                          <div className="flex items-start justify-between gap-2">
+                                            <p
+                                              className={`text-foreground text-[12px] ${isRead ? "font-medium opacity-70" : "font-bold"}`}
+                                            >
+                                              {n.title}
+                                            </p>
+                                            {timeLabel && (
+                                              <span className="text-muted-foreground/70 mt-0.5 shrink-0 text-[10px] whitespace-nowrap">
+                                                {timeLabel}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <p
+                                            className={`mt-0.5 text-[11px] leading-relaxed ${isRead ? "text-muted-foreground/60" : "text-muted-foreground"} ${isExpanded ? "" : "line-clamp-2"}`}
                                           >
-                                            {n.action_label} →
-                                          </a>
-                                        )}
+                                            {n.body}
+                                          </p>
+                                          {bodyLong && (
+                                            <button
+                                              onClick={() => toggleExpand(n.id)}
+                                              className="mt-0.5 text-[10px] font-bold text-[#0d7377] hover:underline"
+                                            >
+                                              {isExpanded ? "Show less ↑" : "Read more ↓"}
+                                            </button>
+                                          )}
+                                          {!isRead && (
+                                            <button
+                                              onClick={() => markOneRead(n.id)}
+                                              className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-[#0d7377] hover:underline"
+                                            >
+                                              <span className="flex h-3 w-3 items-center justify-center rounded-full border border-[#0d7377] text-[7px]">
+                                                ✓
+                                              </span>
+                                              Mark as read
+                                            </button>
+                                          )}
+                                          {n.action_label && n.action_url && (
+                                            <a
+                                              href={n.action_url}
+                                              className="mt-1 inline-block text-[10px] font-black tracking-wide text-[#0d7377] uppercase hover:underline"
+                                            >
+                                              {n.action_label} →
+                                            </a>
+                                          )}
+                                        </div>
+                                        <button
+                                          onClick={() => dismissNotif(n.id)}
+                                          className="text-muted-foreground mt-0.5 shrink-0 text-[10px] hover:text-red-400"
+                                        >
+                                          ✕
+                                        </button>
                                       </div>
-                                      <button
-                                        onClick={() => dismissNotif(n.id)}
-                                        className="text-muted-foreground mt-0.5 shrink-0 text-[10px] hover:text-red-400"
-                                      >
-                                        ✕
-                                      </button>
+                                    );
+                                  })}
+                                </div>
+
+                                {notifList.length > visibleNotifCount &&
+                                  (!notifSeeAll ? (
+                                    <button
+                                      onClick={() => setNotifSeeAll(true)}
+                                      className="hover:bg-muted/50 border-border w-full border-t px-4 py-2.5 text-xs font-bold text-[#0d7377] transition-colors"
+                                    >
+                                      See More ({notifList.length - visibleNotifCount})
+                                    </button>
+                                  ) : (
+                                    <div
+                                      ref={notifSentinelRef}
+                                      className="text-muted-foreground/70 flex items-center justify-center px-4 py-3 text-[10px]"
+                                    >
+                                      Loading more...
                                     </div>
-                                  );
-                                })}
-                              </div>
+                                  ))}
+                              </>
+                            )}
+                          </div>
 
-                              {notifList.length > visibleNotifCount &&
-                                (!notifSeeAll ? (
-                                  <button
-                                    onClick={() => setNotifSeeAll(true)}
-                                    className="hover:bg-muted/50 border-border w-full border-t px-4 py-2.5 text-xs font-bold text-[#0d7377] transition-colors"
-                                  >
-                                    See More ({notifList.length - visibleNotifCount})
-                                  </button>
-                                ) : (
-                                  <div
-                                    ref={notifSentinelRef}
-                                    className="text-muted-foreground/70 flex items-center justify-center px-4 py-3 text-[10px]"
-                                  >
-                                    Loading more...
-                                  </div>
-                                ))}
-                            </>
-                          )}
-                        </div>
-
-                        {/* Footer */}
-                        <div className="border-border bg-muted/20 flex items-center justify-between border-t px-4 py-3">
-                          {notifList.length > 0 && (
-                            <button
-                              className="text-muted-foreground text-xs font-medium transition-colors hover:text-red-400"
-                              onClick={() => notifList.forEach((n: any) => dismissNotif(n.id))}
-                            >
-                              Delete all
-                            </button>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
+                          {/* Footer */}
+                          <div className="border-border bg-muted/20 flex items-center justify-between border-t px-4 py-3">
+                            {notifList.length > 0 && (
+                              <button
+                                className="text-muted-foreground text-xs font-medium transition-colors hover:text-red-400"
+                                onClick={() => notifList.forEach((n: any) => dismissNotif(n.id))}
+                              >
+                                Delete all
+                              </button>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
 
             {/* ── Favorite Items Button (account-wide, hidden inside journeys) ── */}
             {isSignedIn && !isJourneyEnvironment && (
-            <div className="relative" ref={quickAccessRef}>
-              <HydrationSafeButton
-                aria-label="Quick Access List"
-                onClick={() => {
-                  setQuickAccessOpen((prev) => !prev);
-                  setNotificationsOpen(false);
-                }}
-                className={`relative rounded-md border-0 shadow-none transition-colors ${
-                  isHomeHeroState
-                    ? "text-white"
-                    : isHomeHeroP2State
-                      ? "text-[#0d7377]"
-                      : quickAccessOpen
+              <div className="relative" ref={quickAccessRef}>
+                <HydrationSafeButton
+                  aria-label="Quick Access List"
+                  onClick={() => {
+                    setQuickAccessOpen((prev) => !prev);
+                    setNotificationsOpen(false);
+                  }}
+                  className={`relative rounded-md border-0 shadow-none transition-colors ${
+                    isHomeHeroState
+                      ? "text-white"
+                      : isHomeHeroP2State
                         ? "text-[#0d7377]"
-                        : "text-rahvana-primary"
-                }`}
-                style={{
-                  padding: 0,
-                  width: 40,
-                  height: 40,
-                  background: "none",
-                  boxShadow: "none",
-                  border: "none",
-                  borderRadius: "50%",
-                }}
-              >
-                <div className="relative inline-flex">
-                  <Heart
-                    className={`h-5 w-5 transition-all duration-200 ${quickAccessOpen ? "fill-[#0d7377] text-[#0d7377]" : ""}`}
-                    style={
-                      isHomeHeroState
-                        ? { color: "#305d5aff" }
-                        : isHomeHeroP2State
-                          ? { color: "#0d7377" }
-                          : {}
-                    }
-                  />
-                  {quickAccessItems.length > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full border border-white/50 bg-[#0d7377] text-[9px] font-medium text-white">
-                      {quickAccessItems.length > 9 ? "9+" : quickAccessItems.length}
-                    </span>
-                  )}
-                </div>
-              </HydrationSafeButton>
+                        : quickAccessOpen
+                          ? "text-[#0d7377]"
+                          : "text-rahvana-primary"
+                  }`}
+                  style={{
+                    padding: 0,
+                    width: 40,
+                    height: 40,
+                    background: "none",
+                    boxShadow: "none",
+                    border: "none",
+                    borderRadius: "50%",
+                  }}
+                >
+                  <div className="relative inline-flex">
+                    <Heart
+                      className={`h-5 w-5 transition-all duration-200 ${quickAccessOpen ? "fill-[#0d7377] text-[#0d7377]" : ""}`}
+                      style={
+                        isHomeHeroState
+                          ? { color: "#305d5aff" }
+                          : isHomeHeroP2State
+                            ? { color: "#0d7377" }
+                            : {}
+                      }
+                    />
+                    {quickAccessItems.length > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full border border-white/50 bg-[#0d7377] text-[9px] font-medium text-white">
+                        {quickAccessItems.length > 9 ? "9+" : quickAccessItems.length}
+                      </span>
+                    )}
+                  </div>
+                </HydrationSafeButton>
 
-              <AnimatePresence>
-                {quickAccessOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 8 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 8 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
-                    className={`fixed ${mobileQuickAccessPopoverPositionClass} z-[9999] mt-1 w-[calc(100vw-32px)] max-w-sm overflow-visible rounded-xl border border-line bg-surface-raised shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-72 md:origin-top-right md:-translate-x-0`}
-                  >
-                    {/* Header */}
-                    <div className="border-border bg-muted/30 flex items-center justify-between rounded-t-xl border-b px-4 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <Heart className="h-4 w-4 fill-brand text-brand" />
-                        <span className="text-foreground text-sm font-bold">Favorites</span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {/* View Toggle */}
-                        {quickAccessItems.length > 0 && (
-                          <div className="flex items-center rounded-lg border border-line bg-surface-sunken p-0.5">
-                            <button
-                              onClick={() => handleViewModeChange("list")}
-                              className={`rounded-md p-1 transition-all ${
-                                viewMode === "list"
-                                  ? "bg-surface-raised text-brand shadow-xs"
-                                  : "text-muted-foreground hover:text-foreground"
-                              }`}
-                              title="List View"
-                            >
-                              <List className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleViewModeChange("grid")}
-                              className={`rounded-md p-1 transition-all ${
-                                viewMode === "grid"
-                                  ? "bg-surface-raised text-brand shadow-xs"
-                                  : "text-muted-foreground hover:text-foreground"
-                              }`}
-                              title="Grid View"
-                            >
-                              <LayoutGrid className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        )}
-                        <span className="text-muted-foreground bg-muted rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase">
-                          {quickAccessItems.length}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Body */}
-                    <div className="max-h-[320px] overflow-y-auto">
-                      {quickAccessItems.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center gap-3 px-6 py-10">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0d7377]/8">
-                            <Heart className="h-5 w-5 text-[#0d7377]/40" />
-                          </div>
-                          <div className="space-y-1 text-center">
-                            <p className="text-foreground text-sm font-semibold">
-                              No favorites yet
-                            </p>
-                            <p className="text-muted-foreground mx-auto max-w-[200px] text-xs leading-relaxed">
-                              Favorite any tool, guide, or service card to access it here.
-                            </p>
-                          </div>
+                <AnimatePresence>
+                  {quickAccessOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                      className={`fixed ${mobileQuickAccessPopoverPositionClass} border-line bg-surface-raised z-[9999] mt-1 w-[calc(100vw-32px)] max-w-sm overflow-visible rounded-xl border shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-72 md:origin-top-right md:-translate-x-0`}
+                    >
+                      {/* Header */}
+                      <div className="border-border bg-muted/30 flex items-center justify-between rounded-t-xl border-b px-4 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <Heart className="fill-brand text-brand h-4 w-4" />
+                          <span className="text-foreground text-sm font-bold">Favorites</span>
                         </div>
-                      ) : viewMode === "grid" ? (
-                        <div className="grid grid-cols-3 gap-3 p-4">
-                          {quickAccessItems.map((item) => {
-                            const style = getQuickAccessItemStyle(item);
-                            return (
-                              <div
-                                key={item.id}
-                                className={`group relative flex aspect-square flex-col items-center justify-center rounded-xl border border-slate-100 transition-all duration-200 dark:border-slate-800 ${style.hoverBorder}`}
-                                title={item.title}
+
+                        <div className="flex items-center gap-2">
+                          {/* View Toggle */}
+                          {quickAccessItems.length > 0 && (
+                            <div className="border-line bg-surface-sunken flex items-center rounded-lg border p-0.5">
+                              <button
+                                onClick={() => handleViewModeChange("list")}
+                                className={`rounded-md p-1 transition-all ${
+                                  viewMode === "list"
+                                    ? "bg-surface-raised text-brand shadow-xs"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                                title="List View"
                               >
-                                <Link
-                                  href={item.href}
-                                  onClick={() => setQuickAccessOpen(false)}
-                                  className="flex h-full w-full flex-col items-center justify-center p-2 text-center"
+                                <List className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleViewModeChange("grid")}
+                                className={`rounded-md p-1 transition-all ${
+                                  viewMode === "grid"
+                                    ? "bg-surface-raised text-brand shadow-xs"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                                title="Grid View"
+                              >
+                                <LayoutGrid className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )}
+                          <span className="text-muted-foreground bg-muted rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase">
+                            {quickAccessItems.length}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Body */}
+                      <div className="max-h-[320px] overflow-y-auto">
+                        {quickAccessItems.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center gap-3 px-6 py-10">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0d7377]/8">
+                              <Heart className="h-5 w-5 text-[#0d7377]/40" />
+                            </div>
+                            <div className="space-y-1 text-center">
+                              <p className="text-foreground text-sm font-semibold">
+                                No favorites yet
+                              </p>
+                              <p className="text-muted-foreground mx-auto max-w-[200px] text-xs leading-relaxed">
+                                Favorite any tool, guide, or service card to access it here.
+                              </p>
+                            </div>
+                          </div>
+                        ) : viewMode === "grid" ? (
+                          <div className="grid grid-cols-3 gap-3 p-4">
+                            {quickAccessItems.map((item) => {
+                              const style = getQuickAccessItemStyle(item);
+                              return (
+                                <div
+                                  key={item.id}
+                                  className={`group relative flex aspect-square flex-col items-center justify-center rounded-xl border border-slate-100 transition-all duration-200 dark:border-slate-800 ${style.hoverBorder}`}
+                                  title={item.title}
+                                >
+                                  <Link
+                                    href={item.href}
+                                    onClick={() => setQuickAccessOpen(false)}
+                                    className="flex h-full w-full flex-col items-center justify-center p-2 text-center"
+                                  >
+                                    <div
+                                      className={`relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg shadow-xs transition-transform duration-200 group-hover:scale-110 ${style.bg}`}
+                                    >
+                                      <div className="absolute inset-0.5 rounded-[9px] bg-white/15" />
+                                      {(() => {
+                                        const IconComponent =
+                                          (item.icon_name &&
+                                            QUICK_ACCESS_ICON_MAP[item.icon_name]) ||
+                                          Pin;
+                                        return <IconComponent className="relative z-10 h-5 w-5" />;
+                                      })()}
+                                    </div>
+                                  </Link>
+
+                                  {/* Unfavorite button - appears on hover */}
+                                  <button
+                                    onClick={() => removeQuickAccessItem(item.id)}
+                                    className="text-muted-foreground border-line bg-surface-raised absolute -top-1.5 -right-1.5 z-10 rounded-full border p-1 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:border-red-200 hover:text-red-500"
+                                    title="Unfavorite"
+                                  >
+                                    <HeartOff className="h-2.5 w-2.5" />
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="divide-border divide-y">
+                            {quickAccessItems.map((item) => {
+                              const style = getQuickAccessItemStyle(item);
+                              return (
+                                <div
+                                  key={item.id}
+                                  className="hover:bg-muted/40 group flex items-center gap-3 px-4 py-3 transition-colors"
                                 >
                                   <div
-                                    className={`relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg shadow-xs transition-transform duration-200 group-hover:scale-110 ${style.bg}`}
+                                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${style.lightBg}`}
                                   >
-                                    <div className="absolute inset-0.5 rounded-[9px] bg-white/15" />
                                     {(() => {
                                       const IconComponent =
                                         (item.icon_name && QUICK_ACCESS_ICON_MAP[item.icon_name]) ||
                                         Pin;
-                                      return <IconComponent className="relative z-10 h-5 w-5" />;
+                                      return <IconComponent className="h-3.5 w-3.5" />;
                                     })()}
                                   </div>
-                                </Link>
-
-                                {/* Unfavorite button - appears on hover */}
-                                <button
-                                  onClick={() => removeQuickAccessItem(item.id)}
-                                  className="text-muted-foreground absolute -top-1.5 -right-1.5 z-10 rounded-full border border-line bg-surface-raised p-1 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:border-red-200 hover:text-red-500"
-                                  title="Unfavorite"
-                                >
-                                  <HeartOff className="h-2.5 w-2.5" />
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div className="divide-border divide-y">
-                          {quickAccessItems.map((item) => {
-                            const style = getQuickAccessItemStyle(item);
-                            return (
-                              <div
-                                key={item.id}
-                                className="hover:bg-muted/40 group flex items-center gap-3 px-4 py-3 transition-colors"
-                              >
-                                <div
-                                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${style.lightBg}`}
-                                >
-                                  {(() => {
-                                    const IconComponent =
-                                      (item.icon_name && QUICK_ACCESS_ICON_MAP[item.icon_name]) ||
-                                      Pin;
-                                    return <IconComponent className="h-3.5 w-3.5" />;
-                                  })()}
-                                </div>
-                                <Link
-                                  href={item.href}
-                                  onClick={() => setQuickAccessOpen(false)}
-                                  className="min-w-0 flex-1"
-                                >
-                                  <p
-                                    className={`text-foreground truncate text-sm font-medium ${style.hoverText} transition-colors`}
+                                  <Link
+                                    href={item.href}
+                                    onClick={() => setQuickAccessOpen(false)}
+                                    className="min-w-0 flex-1"
                                   >
-                                    {item.title}
-                                  </p>
-                                </Link>
-                                <div className="flex shrink-0 items-center gap-1">
-                                  <button
-                                    onClick={() => removeQuickAccessItem(item.id)}
-                                    className="text-muted-foreground rounded-md p-1.5 transition-colors hover:bg-red-50 hover:text-red-500"
-                                    title="Unfavorite"
-                                  >
-                                    <HeartOff className="h-3.5 w-3.5" />
-                                  </button>
+                                    <p
+                                      className={`text-foreground truncate text-sm font-medium ${style.hoverText} transition-colors`}
+                                    >
+                                      {item.title}
+                                    </p>
+                                  </Link>
+                                  <div className="flex shrink-0 items-center gap-1">
+                                    <button
+                                      onClick={() => removeQuickAccessItem(item.id)}
+                                      className="text-muted-foreground rounded-md p-1.5 transition-colors hover:bg-red-50 hover:text-red-500"
+                                      title="Unfavorite"
+                                    >
+                                      <HeartOff className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
 
-                    {/* Footer */}
-                    <div className="border-border bg-muted/20 flex items-center justify-between rounded-b-xl border-t px-4 py-2.5">
-                      <Link
-                        href="/resources"
-                        onClick={() => setQuickAccessOpen(false)}
-                        className="flex items-center gap-1 text-xs font-medium text-[#0d7377] transition-colors hover:underline"
-                      >
-                        <Wrench className="h-3 w-3" />
-                        Browse all resources
-                      </Link>
-                      {quickAccessItems.length > 0 && (
-                        <button
-                          className="text-muted-foreground text-xs font-medium transition-colors hover:text-red-400"
-                          onClick={async () => {
-                            for (const item of quickAccessItems) {
-                              await removeQuickAccessItem(item.id);
-                            }
-                          }}
+                      {/* Footer */}
+                      <div className="border-border bg-muted/20 flex items-center justify-between rounded-b-xl border-t px-4 py-2.5">
+                        <Link
+                          href="/resources"
+                          onClick={() => setQuickAccessOpen(false)}
+                          className="flex items-center gap-1 text-xs font-medium text-[#0d7377] transition-colors hover:underline"
                         >
-                          Unfavorite all
-                        </button>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
+                          <Wrench className="h-3 w-3" />
+                          Browse all resources
+                        </Link>
+                        {quickAccessItems.length > 0 && (
+                          <button
+                            className="text-muted-foreground text-xs font-medium transition-colors hover:text-red-400"
+                            onClick={async () => {
+                              for (const item of quickAccessItems) {
+                                await removeQuickAccessItem(item.id);
+                              }
+                            }}
+                          >
+                            Unfavorite all
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
 
           {isSignedIn && mobileNavigationMode === "swipe" && !mobileUtilitiesOpen && (
             <HydrationSafeButton
               aria-label="Open quick actions tray"
               onClick={() => setMobileUtilitiesOpen(true)}
-              className="fixed top-1/2 right-0 z-9999 hidden h-12 w-6 -translate-y-1/2 items-center justify-center rounded-l-full border-0 bg-surface-raised/90 text-brand shadow-lg backdrop-blur-md max-[767px]:flex"
+              className="bg-surface-raised/90 text-brand fixed top-1/2 right-0 z-9999 hidden h-12 w-6 -translate-y-1/2 items-center justify-center rounded-l-full border-0 shadow-lg backdrop-blur-md max-[767px]:flex"
             >
               <ChevronDown className="h-4 w-4 rotate-90" aria-hidden="true" />
             </HydrationSafeButton>
@@ -1704,7 +1705,7 @@ export function SiteHeader({
           ) : user ? (
             <div className="flex items-center gap-2">
               <div
-                className="relative max-[640px]:fixed max-[640px]:right-3 max-[640px]:bottom-[calc(0.5rem+env(safe-area-inset-bottom))] max-[640px]:z-101 mb-1 md:mb-0"
+                className="relative mb-1 max-[640px]:fixed max-[640px]:right-3 max-[640px]:bottom-[calc(0.5rem+env(safe-area-inset-bottom))] max-[640px]:z-101 md:mb-0"
                 ref={profileRef}
                 onPointerEnter={(e) => {
                   // Ignore touch pointer types to prevent double-triggering on mobile
@@ -1754,7 +1755,7 @@ export function SiteHeader({
                       initial={{ opacity: 0, scale: 0.95, y: 10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute top-full right-0 z-9999 mt-2 max-h-[80vh] w-76 origin-top-right transform overflow-y-auto rounded-xl border border-line bg-surface-raised shadow-xl max-[640px]:fixed max-[640px]:top-auto max-[640px]:right-4 max-[640px]:bottom-[76px] max-[640px]:mt-0 max-[640px]:max-h-[70vh] max-[640px]:w-[calc(100vw-32px)] max-[640px]:origin-bottom-right"
+                      className="border-line bg-surface-raised absolute top-full right-0 z-9999 mt-2 max-h-[80vh] w-76 origin-top-right transform overflow-y-auto rounded-xl border shadow-xl max-[640px]:fixed max-[640px]:top-auto max-[640px]:right-4 max-[640px]:bottom-[76px] max-[640px]:mt-0 max-[640px]:max-h-[70vh] max-[640px]:w-[calc(100vw-32px)] max-[640px]:origin-bottom-right"
                     >
                       {/* Header */}
                       <div className="border-border bg-muted/30 border-b px-5 py-4">
@@ -1814,7 +1815,7 @@ export function SiteHeader({
                           onClick={() => handleNav("settings")}
                           className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
                         >
-                          <Settings className="h-4 w-4 text-subtle" />
+                          <Settings className="text-subtle h-4 w-4" />
                           Account Settings
                         </button>
                         <ThemeToggle />
@@ -1860,17 +1861,17 @@ export function SiteHeader({
       >
         {/* Backdrop */}
         <div
-          className="absolute inset-0 bg-overlay backdrop-blur-sm"
+          className="bg-overlay absolute inset-0 backdrop-blur-sm"
           onClick={() => setIsMenuOpen(false)}
         />
 
         {/* Sidebar Content */}
         <div
-          className={`absolute top-0 bottom-0 left-0 flex h-dvh w-70 flex-col bg-surface-raised shadow-2xl transition-transform duration-300 ease-in-out ${
+          className={`bg-surface-raised absolute top-0 bottom-0 left-0 flex h-dvh w-70 flex-col shadow-2xl transition-transform duration-300 ease-in-out ${
             isMenuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="flex items-center justify-between border-b border-line p-5">
+          <div className="border-line flex items-center justify-between border-b p-5">
             <Link
               href="/"
               onClick={(e) => handleNav("home", e)}
@@ -1879,7 +1880,7 @@ export function SiteHeader({
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="152 220 710 215"
-                className="text-brand dark:text-white h-8 w-auto fill-current"
+                className="text-brand h-8 w-auto fill-current dark:text-white"
               >
                 <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
                 <path d="M347.022308,320.000671C347.016052,314.839264 347.105347,310.174835 346.965759,305.517273C346.865234,302.162506 348.128204,300.629364 351.628418,300.734467C356.786560,300.889313 361.960175,300.922363 367.113922,300.699646C370.973633,300.532806 372.427643,301.928192 372.368347,305.879303C372.186157,318.023376 372.301971,330.171936 372.301971,342.083649C373.283447,342.867767 373.819183,342.426117 374.318726,342.006836C383.782745,334.063324 394.575775,332.615875 406.196838,335.633057C415.899536,338.152130 422.744904,346.587646 423.310516,356.622040C424.267090,373.593201 423.737030,390.584991 423.953217,407.566589C423.995270,410.868988 423.022247,412.495087 419.405853,412.347473C414.084778,412.130249 408.740967,412.096069 403.421997,412.329346C399.633331,412.495514 398.561127,410.970825 398.606415,407.354187C398.766998,394.531891 398.675171,381.706299 398.663269,368.881958C398.653717,358.575378 395.399567,354.366302 387.286011,354.116821C377.843262,353.826508 372.628845,358.719452 372.391693,368.828339C372.122253,380.313904 372.349670,391.810638 372.318054,403.302399C372.289795,413.578827 373.113983,412.175079 363.109467,412.274994C359.445770,412.311584 355.772827,412.113037 352.119568,412.309662C348.129639,412.524414 346.894379,410.660309 346.908722,406.924530C346.998840,383.444702 346.970551,359.964386 346.985443,336.484253C346.988831,331.156372 347.007996,325.828522 347.022308,320.000671z"></path>
@@ -1920,11 +1921,11 @@ export function SiteHeader({
                         <span className="text-[11px] font-semibold tracking-wider text-teal-700 uppercase dark:text-teal-400">
                           Active Journey
                         </span>
-                        <span className="truncate text-sm font-bold text-strong">
+                        <span className="text-strong truncate text-sm font-bold">
                           {getJourneyDisplayTitle(journeyCategory, journeySlug, pathname)}
                         </span>
                         {activeCandidate && (activeCandidate.fullName || activeCandidate.label) && (
-                          <span className="truncate text-xs text-subtle">
+                          <span className="text-subtle truncate text-xs">
                             Candidate: {activeCandidate.fullName || activeCandidate.label}
                           </span>
                         )}
@@ -1936,9 +1937,9 @@ export function SiteHeader({
                   <Link
                     href="/resources?tab=toolbox"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-strong transition-all hover:bg-surface-sunken"
+                    className="text-strong hover:bg-surface-sunken flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all"
                   >
-                    <Wrench className="h-5 w-5 text-brand" />
+                    <Wrench className="text-brand h-5 w-5" />
                     <span>Standalone Toolbox</span>
                   </Link>
                 </div>
@@ -1998,25 +1999,25 @@ export function SiteHeader({
                           transition={{ duration: 0.2, ease: "easeInOut" }}
                           className="overflow-hidden"
                         >
-                          <div className="mt-1 ml-9 flex flex-col gap-2 border-l-2 border-line py-2 pl-4">
+                          <div className="border-line mt-1 ml-9 flex flex-col gap-2 border-l-2 py-2 pl-4">
                             <Link
                               href="/resources?tab=toolbox"
                               onClick={() => setIsMenuOpen(false)}
-                              className="block rounded-md px-2 py-2 text-sm text-subtle transition-all hover:bg-surface-sunken hover:text-brand"
+                              className="text-subtle hover:bg-surface-sunken hover:text-brand block rounded-md px-2 py-2 text-sm transition-all"
                             >
                               My Tools
                             </Link>
                             <Link
                               href="/resources?tab=services"
                               onClick={() => setIsMenuOpen(false)}
-                              className="block rounded-md px-2 py-2 text-sm text-subtle transition-all hover:bg-surface-sunken hover:text-brand"
+                              className="text-subtle hover:bg-surface-sunken hover:text-brand block rounded-md px-2 py-2 text-sm transition-all"
                             >
                               My Services
                             </Link>
                             <Link
                               href="/resources?tab=guides"
                               onClick={() => setIsMenuOpen(false)}
-                              className="block rounded-md px-2 py-2 text-sm text-subtle transition-all hover:bg-surface-sunken hover:text-brand"
+                              className="text-subtle hover:bg-surface-sunken hover:text-brand block rounded-md px-2 py-2 text-sm transition-all"
                             >
                               My Guides
                             </Link>
@@ -2071,18 +2072,18 @@ export function SiteHeader({
                               transition={{ duration: 0.2, ease: "easeInOut" }}
                               className="overflow-hidden"
                             >
-                              <div className="mt-1 ml-9 flex flex-col gap-4 border-l-2 border-line py-2 pl-4">
+                              <div className="border-line mt-1 ml-9 flex flex-col gap-4 border-l-2 py-2 pl-4">
                                 {section.tabs.map((tab) => (
                                   <div key={tab.id} className="flex flex-col gap-2">
                                     {/* Tab Label */}
-                                    <div className="text-sm font-semibold text-strong">
+                                    <div className="text-strong text-sm font-semibold">
                                       {tab.label}
                                     </div>
 
                                     {/* Render Categories if present */}
                                     {tab.categories?.map((cat, idx) => (
                                       <div key={idx} className="flex flex-col gap-1">
-                                        <div className="mb-1 text-xs font-bold tracking-wider text-subtle uppercase">
+                                        <div className="text-subtle mb-1 text-xs font-bold tracking-wider uppercase">
                                           {cat.label}
                                         </div>
                                         {cat.items.map((item, i) => (
@@ -2092,9 +2093,9 @@ export function SiteHeader({
                                             onClick={handleLinkClick}
                                             className={`block rounded-md px-2 py-2 text-sm transition-all ${
                                               item.disabled
-                                                ? "cursor-not-allowed text-faint"
+                                                ? "text-faint cursor-not-allowed"
                                                 : isActive(item.title, item.href)
-                                                  ? "bg-brand-soft font-semibold text-brand"
+                                                  ? "bg-brand-soft text-brand font-semibold"
                                                   : "text-subtle hover:bg-surface-sunken hover:text-brand"
                                             }`}
                                           >
@@ -2114,9 +2115,9 @@ export function SiteHeader({
                                         onClick={handleLinkClick}
                                         className={`block rounded-md px-2 py-2 text-sm transition-all ${
                                           item.disabled
-                                            ? "cursor-not-allowed text-faint"
+                                            ? "text-faint cursor-not-allowed"
                                             : isActive(item.title, item.href)
-                                              ? "bg-brand-soft font-semibold text-brand"
+                                              ? "bg-brand-soft text-brand font-semibold"
                                               : "text-subtle hover:bg-surface-sunken hover:text-brand"
                                         }`}
                                       >
@@ -2196,7 +2197,7 @@ export function SiteHeader({
                     onClick={() => handleNav("contact")}
                     className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
                       isActive("contact")
-                        ? "bg-primary/10 text-primary"
+                        ? "bg-primary/10 text-brand"
                         : "text-muted-foreground hover:bg-muted"
                     }`}
                   >
@@ -2208,7 +2209,7 @@ export function SiteHeader({
             </nav>
           </div>
 
-          <div className="border-t border-line bg-surface-sunken p-6">
+          <div className="border-line bg-surface-sunken border-t p-6">
             <ThemeToggle className="mb-4 px-0 py-0" />
             {isLoading && !resolvedUser ? (
               <div className="bg-primary/30 h-14 w-full animate-pulse rounded-xl" />
@@ -2224,7 +2225,7 @@ export function SiteHeader({
                 }}
                 className={`w-full rounded-xl py-4 font-bold shadow-lg transition-all ${
                   isSignedIn
-                    ? "border border-destructive bg-transparent text-destructive hover:bg-surface-sunken"
+                    ? "border-destructive text-destructive hover:bg-surface-sunken border bg-transparent"
                     : "bg-primary text-primary-foreground hover:bg-primary/90"
                 }`}
               >
