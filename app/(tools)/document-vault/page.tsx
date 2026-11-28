@@ -2048,7 +2048,7 @@ export default function DocumentVaultPage() {
 
                                   {/* Collapsible List of Documents */}
                                   {isExpanded && (
-                                    <div className="border-t border-slate-100 bg-[#fbfdfd] p-4 sm:p-5 dark:border-slate-800 dark:bg-slate-950/40">
+                                    <div className="border-t border-slate-100 bg-[#fbfdfd] p-4 max-[425px]:p-2 sm:p-5 dark:border-slate-800 dark:bg-slate-950/40">
                                       {viewMode === "grid" ? (
                                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                           {docs.map((doc) => {

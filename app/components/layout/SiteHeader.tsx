@@ -1237,6 +1237,8 @@ export function SiteHeader({
           <div
             ref={mobileUtilitiesRef}
             className={`flex items-center gap-1.5 ${
+              isSignedIn && (!isLoading || resolvedUser) ? "" : "max-[640px]:hidden"
+            } ${
               mobileNavigationMode === "bottom"
                 ? "mobile-bottom-nav max-[640px]:fixed max-[640px]:right-0 max-[640px]:bottom-0 max-[640px]:left-0 max-[640px]:z-100 max-[640px]:gap-0 max-[640px]:rounded-t-2xl max-[640px]:border-x-0 max-[640px]:border-b-0 max-[640px]:border-t max-[640px]:border-teal-700/20 max-[640px]:bg-[#e8f4f3]/95 max-[640px]:px-3 max-[640px]:pr-14 max-[640px]:pt-2 max-[640px]:pb-[calc(0.5rem+env(safe-area-inset-bottom))] max-[640px]:shadow-[0_-8px_24px_rgba(13,115,119,0.14)] max-[640px]:backdrop-blur-xl max-[640px]:[&>*]:flex max-[640px]:[&>*]:flex-1 max-[640px]:[&>*]:justify-center dark:max-[640px]:border-slate-700/70 dark:max-[640px]:bg-[#102f33]/90"
                 : mobileNavigationMode === "swipe"
@@ -1306,7 +1308,7 @@ export function SiteHeader({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 8 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className={`fixed ${mobilePopoverPositionClass} z-9999 mt-1 w-[calc(100vw-32px)] max-w-sm overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-80 md:origin-top-right md:-translate-x-0`}
+                        className={`fixed ${mobilePopoverPositionClass} z-9999 mt-1 w-[calc(100vw-32px)] max-w-sm overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl max-[640px]:max-h-[calc(100dvh-96px)] md:absolute md:top-full md:right-0 md:left-auto md:w-80 md:origin-top-right md:-translate-x-0`}
                       >
                         {/* Header */}
                         <div className="border-border bg-muted/30 flex items-center justify-between border-b px-4 py-3">
@@ -1320,7 +1322,10 @@ export function SiteHeader({
                         </div>
 
                         {/* Body */}
-                        <div ref={notifScrollRef} className="max-h-[340px] overflow-y-auto">
+                        <div
+                          ref={notifScrollRef}
+                          className="max-h-[340px] overflow-y-auto max-[640px]:max-h-[calc(100dvh-160px)]"
+                        >
                           {notifList.length === 0 ? (
                             <div className="flex flex-col items-center justify-center gap-4 px-6 py-10">
                               <div className="bg-muted flex h-14 w-14 items-center justify-center rounded-2xl">
@@ -1520,7 +1525,7 @@ export function SiteHeader({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 8 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    className={`fixed ${mobileQuickAccessPopoverPositionClass} z-[9999] mt-1 w-[calc(100vw-32px)] max-w-sm overflow-visible rounded-xl border border-slate-200 bg-white shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-72 md:origin-top-right md:-translate-x-0`}
+                    className={`fixed ${mobileQuickAccessPopoverPositionClass} z-[9999] mt-1 w-[calc(100vw-32px)] max-w-sm overflow-visible rounded-xl border border-slate-200 bg-white shadow-xl max-[640px]:max-h-[calc(100dvh-88px)] md:absolute md:top-full md:right-0 md:left-auto md:w-72 md:origin-top-right md:-translate-x-0`}
                   >
                     {/* Header */}
                     <div className="border-border bg-muted/30 flex items-center justify-between rounded-t-xl border-b px-4 py-2.5">
@@ -1564,7 +1569,7 @@ export function SiteHeader({
                     </div>
 
                     {/* Body */}
-                    <div className="max-h-[320px] overflow-y-auto">
+                    <div className="max-h-[320px] overflow-y-auto max-[640px]:max-h-[calc(100dvh-140px)]">
                       {quickAccessItems.length === 0 ? (
                         <div className="flex flex-col items-center justify-center gap-3 px-6 py-10">
                           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0d7377]/8">
@@ -1692,7 +1697,7 @@ export function SiteHeader({
                 )}
               </AnimatePresence>
             </div>
-          )}
+            )}
           </div>
 
           {isSignedIn && mobileNavigationMode === "swipe" && !mobileUtilitiesOpen && (
