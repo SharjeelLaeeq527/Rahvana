@@ -2,32 +2,7 @@
 import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { safeError } from "@/lib/api/safeError";
-
-/**
- * Helper: Create an authenticated Supabase client from the request cookies
- * and return both the client and the current user.
- */
-async function getAuthenticatedUser(request: NextRequest) {
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll() {},
-      },
-    }
-  );
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  return { supabase, user, error };
-}
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 /**
  * POST /api/notifications
@@ -35,7 +10,9 @@ async function getAuthenticatedUser(request: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
-    const { user } = await getAuthenticatedUser(req);
+    const sessionGuard = await requireActiveSessionForRequest(req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
     const body = await req.json();
     const {
       title,
@@ -53,14 +30,10 @@ export async function POST(req: NextRequest) {
       user_id: explicitUserId,
     } = body;
 
-    const targetUserId = explicitUserId || user?.id;
-
-    if (!targetUserId) {
-      return Response.json(
-        { error: "Authentication required or user_id must be provided" },
-        { status: 401 }
-      );
+    if (explicitUserId && explicitUserId !== user.id) {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
     }
+    const targetUserId = user.id;
 
     const notificationBody = message || bodyText;
     if (!title || !notificationBody) {
@@ -124,14 +97,9 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   try {
-    const { user, error: authError } = await getAuthenticatedUser(req);
-
-    if (authError || !user) {
-      return Response.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+    const sessionGuard = await requireActiveSessionForRequest(req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     // Use service role to bypass RLS for reading (we filter by user_id manually)
     const supabase = createServerClient(
@@ -189,14 +157,9 @@ export async function GET(req: NextRequest) {
  */
 export async function PATCH(req: NextRequest) {
   try {
-    const { user, error: authError } = await getAuthenticatedUser(req);
-
-    if (authError || !user) {
-      return Response.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+    const sessionGuard = await requireActiveSessionForRequest(req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const body = await req.json();
     const { id, ids, action } = body;

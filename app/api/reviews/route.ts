@@ -4,7 +4,6 @@
 //   POST /api/reviews              -> submit/edit own review (auth required)
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import {
   getApprovedReviews,
   getReviewStats,
@@ -12,6 +11,7 @@ import {
   submitReview,
 } from "@/lib/reviews/data-access";
 import type { ToolReviewInput } from "@/types/reviews";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -36,14 +36,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "You must be signed in to write a review" }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user, supabase } = sessionGuard.context;
 
     const body = (await request.json().catch(() => null)) as Partial<ToolReviewInput> | null;
     if (!body) {

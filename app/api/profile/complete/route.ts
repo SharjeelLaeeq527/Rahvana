@@ -16,6 +16,7 @@ import { encrypt } from "@/lib/encryption";
 import { validateProfile } from "@/lib/profile/schema";
 import { withServerOwnedKeys } from "@/lib/profile/serverOwnedKeys";
 import type { MasterProfile } from "@/types/profile";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 // Sensitive top-level string fields inside the MasterProfile object
 const SENSITIVE_TOP_LEVEL = [
@@ -87,14 +88,9 @@ export async function POST(request: Request) {
   try {
     // ── 1. Authenticate user ──────────────────────────────────────────────────
     const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     // ── 2. Parse incoming profile_details object ──────────────────────────────
     const body = await request.json();

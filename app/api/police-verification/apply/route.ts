@@ -8,6 +8,8 @@ import {
   type JourneyServiceAccess,
 } from "@/lib/journey/journeyServiceAccess";
 import { getServiceRoleClient } from "@/lib/api/authGuards";
+import { createClient } from "@/lib/supabase/server";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 interface PoliceVerificationData {
   user_id?: string;
@@ -72,39 +74,18 @@ function generateRequestId() {
 
 export async function POST(req: NextRequest) {
   try {
+    // The request is filed for the signed-in user (never a user id from the body),
+    // paid with their credits or covered by their journey plan.
+    const authClient = await createClient();
+    const sessionGuard = await requireActiveSession(authClient, req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return [];
-          },
-          setAll() {},
-        },
-      }
+      { cookies: { getAll: () => [], setAll: () => {} } }
     );
-
-    // The request is filed for the signed-in user (never a user id from the body),
-    // paid with their credits or covered by their journey plan.
-    const authClient = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return req.cookies.getAll();
-          },
-          setAll() {},
-        },
-      }
-    );
-    const {
-      data: { user },
-    } = await authClient.auth.getUser();
-    if (!user) {
-      return Response.json({ error: "Authentication required" }, { status: 401 });
-    }
 
     const body = await req.json();
     const requestId = generateRequestId();

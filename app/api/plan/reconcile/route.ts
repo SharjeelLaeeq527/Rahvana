@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { reconcileUserPlan } from "@/lib/plan/reconcile";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 /**
  * POST /api/plan/reconcile
@@ -18,21 +19,18 @@ import { reconcileUserPlan } from "@/lib/plan/reconcile";
  *   - Only applies tiers from payments with status === 'succeeded'
  *   - Idempotent — calling repeatedly is a no-op once state is correct
  */
-export async function POST() {
+export async function POST(request: Request) {
   try {
     const supabase = await createServerClient();
-    const { data: authData, error: authErr } = await supabase.auth.getUser();
-
-    if (authErr || !authData?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
 
     const admin = createServiceClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const result = await reconcileUserPlan(admin, authData.user.id);
+    const result = await reconcileUserPlan(admin, sessionGuard.context.user.id);
     return NextResponse.json(result);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";
