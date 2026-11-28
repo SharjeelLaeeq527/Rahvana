@@ -681,10 +681,7 @@ html {
   --color-rahvana-primary-pale: var(--rahvana-primary-pale);
   --color-rahvana-secondary: var(--rahvana-secondary);
 
-  /* Theme tokens -> classes (bg-surface, text-subtle, border-line, bg-success-soft ...).
-     There is deliberately no plain "brand" colour: some vault components already carry
-     bg-brand / text-brand classes that render nothing today. Use bg-primary for the
-     brand fill. */
+  /* Theme tokens -> classes (bg-surface, text-subtle, border-line, text-brand, bg-success-soft ...). */
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-surface-sunken: var(--surface-sunken);
@@ -694,6 +691,7 @@ html {
   --color-faint: var(--text-faint);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand);
   --color-brand-text: var(--brand-text);
   --color-brand-hover: var(--brand-hover);
   --color-brand-soft: var(--brand-soft);
