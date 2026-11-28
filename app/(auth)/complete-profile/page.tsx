@@ -20,7 +20,7 @@ export default function CompleteProfilePage() {
   // Show loading while checking auth
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader size="md" />
       </div>
     );
@@ -30,22 +30,22 @@ export default function CompleteProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 px-4 sm:px-6 py-8 sm:py-12">
+    <div className="min-h-screen bg-background px-4 sm:px-6 py-8 sm:py-12">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 mb-6 pt-13.75">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                 Complete Your Profile
               </h1>
-              <p className="text-sm sm:text-base text-slate-600 mt-1 sm:mt-2">
+              <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
                 Provide detailed information to enable auto-fill across all tools
               </p>
             </div>
             <div className="text-left sm:text-right">
-              <div className="text-sm text-slate-600">Step 2 of 3</div>
-              <div className="w-full sm:w-32 h-2 bg-slate-200 rounded-full mt-2">
-                <div className="w-2/3 h-full bg-[#0d7377] rounded-full"></div>
+              <div className="text-sm text-muted-foreground">Step 2 of 3</div>
+              <div className="w-full sm:w-32 h-2 bg-muted rounded-full mt-2">
+                <div className="w-2/3 h-full bg-primary rounded-full"></div>
               </div>
             </div>
           </div>

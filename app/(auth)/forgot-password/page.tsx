@@ -194,7 +194,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           {/* Help Link */}
-          <p className="mt-6 text-center text-sm text-slate-400">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Having trouble?{" "}
             <a
               href="mailto:support@rahvana.com"
@@ -277,10 +277,10 @@ export default function ForgotPasswordPage() {
 
               {/* Error Message */}
               {error && (
-                <div className="flex items-center gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
+                <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/20">
                     <svg
-                      className="h-5 w-5 text-red-600"
+                      className="h-5 w-5 text-destructive"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -294,8 +294,8 @@ export default function ForgotPasswordPage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-red-800">Unable to send reset email</p>
-                    <p className="mt-0.5 text-sm text-red-600">{error}</p>
+                    <p className="text-sm font-medium text-destructive">Unable to send reset email</p>
+                    <p className="mt-0.5 text-sm text-destructive">{error}</p>
                   </div>
                 </div>
               )}

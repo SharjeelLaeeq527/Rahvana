@@ -22,16 +22,16 @@ import {
 
 // Icon mapping for different field types
 const iconMap: Record<string, ReactNode> = {
-  name: <User className="h-4 w-4 text-slate-400" />,
-  email: <Mail className="h-4 w-4 text-slate-400" />,
-  phone: <Phone className="h-4 w-4 text-slate-400" />,
-  address: <MapPin className="h-4 w-4 text-slate-400" />,
-  city: <Building2 className="h-4 w-4 text-slate-400" />,
-  date: <Calendar className="h-4 w-4 text-slate-400" />,
-  job: <Briefcase className="h-4 w-4 text-slate-400" />,
-  education: <GraduationCap className="h-4 w-4 text-slate-400" />,
-  document: <FileText className="h-4 w-4 text-slate-400" />,
-  country: <Globe className="h-4 w-4 text-slate-400" />,
+  name: <User className="h-4 w-4 text-muted-foreground" />,
+  email: <Mail className="h-4 w-4 text-muted-foreground" />,
+  phone: <Phone className="h-4 w-4 text-muted-foreground" />,
+  address: <MapPin className="h-4 w-4 text-muted-foreground" />,
+  city: <Building2 className="h-4 w-4 text-muted-foreground" />,
+  date: <Calendar className="h-4 w-4 text-muted-foreground" />,
+  job: <Briefcase className="h-4 w-4 text-muted-foreground" />,
+  education: <GraduationCap className="h-4 w-4 text-muted-foreground" />,
+  document: <FileText className="h-4 w-4 text-muted-foreground" />,
+  country: <Globe className="h-4 w-4 text-muted-foreground" />,
 };
 
 interface FormFieldProps {
@@ -67,13 +67,13 @@ export function FormField({
   const hasError = Boolean(error);
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <Label className="text-xs font-semibold text-slate-700">
+      <Label className="text-xs font-semibold text-foreground">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
       <div className="relative">
         {icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
             {iconMap[icon]}
           </div>
         )}
@@ -86,25 +86,25 @@ export function FormField({
           readOnly={readOnly}
           aria-invalid={hasError}
           className={cn(
-            "h-12 text-sm bg-white border rounded-lg",
-            "placeholder:text-slate-400",
-            "disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed",
-            "read-only:bg-slate-50 read-only:text-slate-700 read-only:border-slate-200",
+            "h-12 text-sm bg-card border border-border rounded-lg",
+            "placeholder:text-muted-foreground",
+            "disabled:bg-muted/40 disabled:text-muted-foreground disabled:cursor-not-allowed",
+            "read-only:bg-muted/40 read-only:text-foreground read-only:border-border",
             "focus:outline-none focus:ring-1 transition-colors",
             hasError
-              ? "border-red-300 focus:border-red-400 focus:ring-red-100"
-              : "border-[#E2E5E8] hover:border-[#D0D5DA] focus:border-[#0F8F80] focus:ring-[#E1F2EE]",
+              ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+              : "border-border hover:border-border/80 focus:border-primary focus:ring-primary/20",
             icon ? "pl-9" : "px-3"
           )}
         />
       </div>
       {hasError ? (
-        <p className="flex items-center gap-1 text-xs text-red-600 font-medium">
+        <p className="flex items-center gap-1 text-xs text-destructive font-medium">
           <AlertCircle className="h-3 w-3 shrink-0" />
           {error}
         </p>
       ) : (
-        helpText && <p className="text-xs text-slate-500">{helpText}</p>
+        helpText && <p className="text-xs text-muted-foreground">{helpText}</p>
       )}
     </div>
   );
@@ -137,7 +137,7 @@ export function FormSelect({
 }: FormSelectProps) {
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <Label className="text-xs font-semibold text-slate-700">
+      <Label className="text-xs font-semibold text-foreground">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
@@ -150,9 +150,9 @@ export function FormSelect({
         ]}
         placeholder={placeholder}
         disabled={disabled || readOnly}
-        className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:h-12 [&_button]:text-sm [&_button]:rounded-lg [&_button]:border-[#E2E5E8] [&_button]:hover:border-[#D0D5DA] [&_button]:focus:border-[#0F8F80]"
+        className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:h-12 [&_button]:text-sm [&_button]:rounded-lg [&_button]:border-border [&_button]:hover:border-border/80 [&_button]:focus:border-primary"
       />
-      {helpText && <p className="text-xs text-slate-500">{helpText}</p>}
+      {helpText && <p className="text-xs text-muted-foreground">{helpText}</p>}
     </div>
   );
 }
@@ -174,7 +174,7 @@ export type SectionAccent =
   | "teal";
 
 const accentStyles: Record<SectionAccent, string> = {
-  slate: "bg-slate-100 text-slate-600",
+  slate: "bg-muted text-muted-foreground",
   emerald: "bg-emerald-100 text-emerald-600",
   sky: "bg-sky-100 text-sky-600",
   violet: "bg-violet-100 text-violet-600",
@@ -217,7 +217,7 @@ export function SectionHeader({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+            <h3 className="text-sm font-semibold text-foreground">{title}</h3>
             {badge && (
               <span
                 className={cn(
@@ -229,12 +229,12 @@ export function SectionHeader({
               </span>
             )}
           </div>
-          {description && <p className="text-xs text-slate-500 mt-1">{description}</p>}
+          {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         </div>
       </div>
       <ChevronDown
         className={cn(
-          "h-5 w-5 shrink-0 text-slate-400 transition-transform duration-200",
+          "h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200",
           isOpen && "rotate-180"
         )}
       />
@@ -253,8 +253,8 @@ export function FormSection({ title, description, children, className }: FormSec
   return (
     <div className={cn("space-y-4", className)}>
       <div className="pb-1">
-        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
-        {description && <p className="text-xs text-slate-500 mt-1">{description}</p>}
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
       </div>
       <div className="space-y-4">{children}</div>
     </div>
@@ -295,13 +295,13 @@ export function FormCheckbox({
         checked={checked}
         onChange={(e) => onCheckedChange(e.target.checked)}
         disabled={disabled}
-        className="h-4 w-4 rounded border-slate-300 text-slate-700 focus:ring-slate-400 focus:ring-offset-0 disabled:cursor-not-allowed accent-[#0F8F80]"
+        className="h-4 w-4 rounded border-border text-foreground focus:ring-ring focus:ring-offset-0 disabled:cursor-not-allowed accent-primary"
       />
       <span
         className={cn(
           "text-sm font-normal leading-snug",
-          variant === "warning" ? "text-amber-700" : "text-slate-700",
-          !disabled && "group-hover:text-slate-900"
+          variant === "warning" ? "text-amber-600 dark:text-amber-400" : "text-foreground",
+          !disabled && "group-hover:text-foreground"
         )}
       >
         {label}

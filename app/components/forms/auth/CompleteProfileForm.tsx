@@ -1331,33 +1331,33 @@ export default function CompleteProfileForm() {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <div className="bg-card rounded-lg border border-border overflow-hidden">
       {/* Header with step indicator */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 border-b border-slate-100 px-4 sm:px-5 py-3 sm:py-4 bg-slate-50/50">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 border-b border-border px-4 sm:px-5 py-3 sm:py-4 bg-muted/20">
         <div>
-          <h2 className="text-base font-semibold text-slate-900">{steps[currentStep].title}</h2>
+          <h2 className="text-base font-semibold text-foreground">{steps[currentStep].title}</h2>
           {steps[currentStep].description && (
-            <p className="text-xs text-slate-500 mt-0.5">{steps[currentStep].description}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{steps[currentStep].description}</p>
           )}
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-500 self-start sm:self-auto">
-          <span className="px-2.5 py-1 bg-white border border-slate-200 rounded-md font-medium">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground self-start sm:self-auto">
+          <span className="px-2.5 py-1 bg-card border border-border rounded-md font-medium">
             Step {currentStep + 1} of {steps.length}
           </span>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 bg-slate-100">
+      <div className="h-1 bg-muted">
         <div
-          className="h-full bg-[#0d7377] transition-all duration-300"
+          className="h-full bg-primary transition-all duration-300"
           style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
         />
       </div>
 
       <div className="p-4 sm:p-5">
         {error && (
-          <div className="mb-4 px-3 py-2 bg-red-50 border border-red-200 text-red-700 rounded-md text-xs">
+          <div className="mb-4 px-3 py-2 bg-destructive/10 border border-destructive/20 text-destructive rounded-md text-xs">
             {error}
           </div>
         )}
@@ -1366,7 +1366,7 @@ export default function CompleteProfileForm() {
         <div className="mb-5">{steps[currentStep].render()}</div>
 
         {/* Navigation */}
-        <div className="flex justify-between pt-4 border-t border-slate-100">
+        <div className="flex justify-between pt-4 border-t border-border">
           <Button
             variant="outline"
             onClick={prevStep}

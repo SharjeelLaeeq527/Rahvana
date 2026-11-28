@@ -68,7 +68,7 @@ export default function SignupPage() {
       case 5:
         return "bg-green-500";
       default:
-        return "bg-gray-300";
+        return "bg-muted";
     }
   };
 
@@ -411,18 +411,18 @@ export default function SignupPage() {
                 </button>
               </div>
               {confirmPassword && password !== confirmPassword && (
-                <p className="text-xs text-red-500">{msg(E.AUTH_CLIENT_PASSWORD_MISMATCH)}</p>
+                <p className="text-xs text-destructive">{msg(E.AUTH_CLIENT_PASSWORD_MISMATCH)}</p>
               )}
               {confirmPassword && password === confirmPassword && (
-                <p className="text-xs text-green-500">Passwords match</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400">Passwords match</p>
               )}
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
+              <div className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4">
                 <svg
-                  className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
+                  className="mt-0.5 h-5 w-5 shrink-0 text-destructive"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -434,7 +434,7 @@ export default function SignupPage() {
                     d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <p className="text-sm text-red-700">{error}</p>
+                <p className="text-sm text-destructive">{error}</p>
               </div>
             )}
 

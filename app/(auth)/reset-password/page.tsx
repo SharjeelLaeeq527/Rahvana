@@ -196,11 +196,11 @@ function ResetPasswordContent() {
           </div>
 
           {/* Security Tip */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+          <div className="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-xl">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                 <svg
-                  className="w-4 h-4 text-blue-600"
+                  className="w-4 h-4 text-primary"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -214,8 +214,8 @@ function ResetPasswordContent() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-medium text-blue-900">Security tip</p>
-                <p className="text-sm text-blue-700 mt-0.5">
+                <p className="text-sm font-medium text-foreground">Security tip</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
                   If you didn&apos;t request this change, please contact support immediately.
                 </p>
               </div>
@@ -551,10 +551,10 @@ function ResetPasswordContent() {
 
               {/* Error Message */}
               {error && (
-                <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-xl">
-                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
+                  <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center shrink-0">
                     <svg
-                      className="w-5 h-5 text-red-600"
+                      className="w-5 h-5 text-destructive"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -568,8 +568,8 @@ function ResetPasswordContent() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-red-800">Error</p>
-                    <p className="text-sm text-red-600 mt-0.5">{error}</p>
+                    <p className="text-sm font-medium text-destructive">Error</p>
+                    <p className="text-sm text-destructive mt-0.5">{error}</p>
                   </div>
                 </div>
               )}

@@ -393,9 +393,9 @@ function LoginContent() {
 
               {/* Error Message */}
               {error && (
-                <div className="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
+                <div className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4">
                   <svg
-                    className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-destructive"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -407,7 +407,7 @@ function LoginContent() {
                       d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <p className="text-sm text-red-700">{error}</p>
+                  <p className="text-sm text-destructive">{error}</p>
                 </div>
               )}
 
@@ -501,9 +501,9 @@ function LoginContent() {
 
               {/* Success Message */}
               {success && (
-                <div className="flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+                <div className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
                   <svg
-                    className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -515,15 +515,15 @@ function LoginContent() {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <p className="text-sm text-emerald-700">{success}</p>
+                  <p className="text-sm text-emerald-600 dark:text-emerald-400">{success}</p>
                 </div>
               )}
 
               {/* Error Message */}
               {error && (
-                <div className="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
+                <div className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4">
                   <svg
-                    className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-destructive"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -535,7 +535,7 @@ function LoginContent() {
                       d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <p className="text-sm text-red-700">{error}</p>
+                  <p className="text-sm text-destructive">{error}</p>
                 </div>
               )}
 

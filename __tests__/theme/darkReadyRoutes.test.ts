@@ -29,8 +29,21 @@ describe("isDarkReadyRoute", () => {
     expect(isDarkReadyRoute("", ready)).toBe(false);
   });
 
-  it("starts with no dark-ready routes (every page light)", () => {
-    expect(DARK_READY_PREFIXES).toEqual([]);
+  it("starts with Phase 3 dark-ready routes enabled", () => {
+    expect(DARK_READY_PREFIXES).toEqual([
+      "/login",
+      "/signup",
+      "/forgot-password",
+      "/reset-password",
+      "/mfa-setup",
+      "/complete-profile",
+      "/settings",
+      "/profile",
+    ]);
+    expect(isDarkReadyRoute("/login")).toBe(true);
+    expect(isDarkReadyRoute("/signup")).toBe(true);
+    expect(isDarkReadyRoute("/settings")).toBe(true);
+    expect(isDarkReadyRoute("/profile")).toBe(true);
     expect(isDarkReadyRoute("/user-dashboard")).toBe(false);
   });
 });

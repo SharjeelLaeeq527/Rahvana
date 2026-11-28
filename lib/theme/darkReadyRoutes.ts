@@ -7,7 +7,16 @@
  * A prefix matches the route itself and everything under it: "/login" matches
  * "/login" and "/login/x", not "/login-help". Use "/" alone for the home page only.
  */
-export const DARK_READY_PREFIXES: readonly string[] = [];
+export const DARK_READY_PREFIXES: readonly string[] = [
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/mfa-setup",
+  "/complete-profile",
+  "/settings",
+  "/profile",
+];
 
 /** Routes that stay light forever (internal tools, paper-like pages). */
 export const NEVER_DARK_PREFIXES: readonly string[] = ["/admin"];
