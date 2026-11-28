@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runSecurityScan, pruneOldAuditLogs } from "@/lib/security/alerting";
+import { runSecurityScan, pruneOldAuditLogs, pruneOldSecurityData } from "@/lib/security/alerting";
 
 /**
  * GET /api/cron/security-scan
@@ -41,7 +41,11 @@ export async function GET(request: NextRequest) {
     // over it) stays small. Non-fatal: a prune error must not fail the scan.
     let pruned = 0;
     try {
+      // Audit log cleanup
       pruned = await pruneOldAuditLogs(90);
+
+      // Security data cleanup
+      await pruneOldSecurityData(90);
     } catch (e) {
       console.error("[security-scan] prune error:", e);
     }
