@@ -5,11 +5,13 @@ import { useAuth } from "@/app/context/AuthContext";
 import { SiteHeader } from "./SiteHeader";
 import { useRouter, usePathname } from "next/navigation";
 import { Loader } from "@/components/ui/spinner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 export function ClientHeader() {
   const { user, profile, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const { showToast } = useToast();
 
   // Tracks whether a sign-out is in progress (shows the loading overlay)
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -32,16 +34,19 @@ export function ClientHeader() {
       // ── SIGN OUT ─────────────────────────────────────────────────
       setIsSigningOut(true);
 
-      // Run signOut (which already has internal timeouts).
-      // Even if it fails, we MUST redirect to clear stale state.
+      // Revoke and audit this session before clearing local auth state.
       try {
         await signOut();
-      } catch {
-        // Swallow — redirect handles cleanup
+      } catch (error) {
+        setIsSigningOut(false);
+        showToast(
+          error instanceof Error ? error.message : "Unable to sign out this session.",
+          "error"
+        );
+        return;
       }
 
-      // ALWAYS redirect — this is outside try/catch so it runs no matter what.
-      // Full page reload ensures middleware re-validates from scratch.
+      // A full page reload ensures middleware re-validates from scratch.
       window.location.href = "/";
     } else {
       // ── NAVIGATE TO LOGIN ──────────────────────────────────────
