@@ -282,7 +282,7 @@ export default function WalletTransactionsPage() {
   }
 
   return (
-    <div className="bg-[#F6F4EF] min-h-screen pt-16">
+    <div className="bg-[#F6F4EF] min-h-screen pt-12">
       <div className="w-full">
         {/* Hero Header Deck */}
         <header className="relative overflow-hidden bg-[#0A4F49] px-4 py-10 pb-20 text-white sm:px-6 lg:px-10">
@@ -636,48 +636,52 @@ export default function WalletTransactionsPage() {
               </div>
 
               <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
-                <div
-                  className="scrollbar-hide flex w-full items-center gap-1 overflow-x-auto rounded-full bg-slate-100 p-1 whitespace-nowrap sm:w-fit"
-                  role="group"
-                  aria-label="Filter transactions"
-                >
-                  {LEDGER_FILTERS.map((f) => (
-                    <button
-                      key={f}
-                      type="button"
-                      onClick={() => setFilter(f)}
-                      aria-pressed={filter === f}
-                      title={LEDGER_FILTER_HINTS[f]}
-                      className={`shrink-0 rounded-full px-3.5 py-1.5 text-[12px] font-bold whitespace-nowrap transition-all ${
-                        filter === f
-                          ? "text-rahvana-primary-dark bg-white shadow-sm"
-                          : "text-slate-500 hover:text-slate-700"
-                      }`}
-                    >
-                      {LEDGER_FILTER_LABELS[f]}
-                    </button>
-                  ))}
-                </div>
+              <div
+  className="flex w-full flex-wrap items-center gap-1 rounded-2xl bg-slate-100 p-1 sm:w-fit"
+  role="group"
+  aria-label="Filter transactions"
+>
+  {LEDGER_FILTERS.map((f) => (
+    <button
+      key={f}
+      type="button"
+      onClick={() => setFilter(f)}
+      aria-pressed={filter === f}
+      title={LEDGER_FILTER_HINTS[f]}
+      className={`flex-1 rounded-full px-3 py-2 text-[11px] font-bold whitespace-nowrap transition-all sm:flex-none sm:px-3.5 sm:py-1.5 sm:text-[12px] ${
+        filter === f
+          ? "text-rahvana-primary-dark bg-white shadow-sm"
+          : "text-slate-500 hover:text-slate-700"
+      }`}
+    >
+      {LEDGER_FILTER_LABELS[f]}
+    </button>
+  ))}
+</div>
 
-                <Select value={String(days)} onValueChange={(v) => setDays(Number(v))}>
-                  <SelectTrigger
-                    className="w-[150px] rounded-xl border-slate-200 bg-white text-[12.5px] font-semibold text-slate-600 shadow-none"
-                    aria-label="Date range"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LEDGER_DATE_RANGES.map((r) => (
-                      <SelectItem
-                        key={r.days}
-                        value={String(r.days)}
-                        className="text-[12.5px] font-medium"
-                      >
-                        {r.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+<Select
+  value={String(days)}
+  onValueChange={(v) => setDays(Number(v))}
+>
+  <SelectTrigger
+    className="h-10 w-full min-w-0 rounded-xl border-slate-200 bg-white text-[12.5px] font-semibold text-slate-600 shadow-none sm:w-[150px] sm:shrink-0"
+    aria-label="Date range"
+  >
+    <SelectValue placeholder="Date range" />
+  </SelectTrigger>
+
+  <SelectContent position="popper" className="max-w-[calc(100vw-32px)]">
+    {LEDGER_DATE_RANGES.map((r) => (
+      <SelectItem
+        key={r.days}
+        value={String(r.days)}
+        className="text-[12.5px] font-medium"
+      >
+        {r.label}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
               </div>
             </div>
 
