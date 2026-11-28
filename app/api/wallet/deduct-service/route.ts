@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthenticatedUser, getServiceRoleClient } from "@/lib/api/authGuards";
+import { getServiceRoleClient } from "@/lib/api/authGuards";
 import { deductServiceBooking } from "@/lib/wallet/serviceBooking";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 /**
  * POST /api/wallet/deduct-service
@@ -12,10 +13,9 @@ import { deductServiceBooking } from "@/lib/wallet/serviceBooking";
  * Prices are strictly server-authoritative from the wallet catalog.
  */
 export async function POST(request: NextRequest) {
-  const user = await getAuthenticatedUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
-  }
+  const sessionGuard = await requireActiveSessionForRequest(request);
+  if (!sessionGuard.ok) return sessionGuard.response;
+  const { user } = sessionGuard.context;
 
   let body: Record<string, unknown>;
   try {

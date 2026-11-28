@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthenticatedUser, getServiceRoleClient } from "@/lib/api/authGuards";
+import { getServiceRoleClient } from "@/lib/api/authGuards";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 import {
   buildSearchOrClause,
   isLedgerFilter,
@@ -49,10 +50,9 @@ function toSummary(row: Record<string, unknown> | null | undefined): LedgerSumma
  * if the summary RPC is unavailable, so the list still renders.
  */
 export async function GET(request: NextRequest) {
-  const user = await getAuthenticatedUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
-  }
+  const sessionGuard = await requireActiveSessionForRequest(request);
+  if (!sessionGuard.ok) return sessionGuard.response;
+  const { user } = sessionGuard.context;
 
   const params = request.nextUrl.searchParams;
   const page = positiveInt(params.get("page"), 1);

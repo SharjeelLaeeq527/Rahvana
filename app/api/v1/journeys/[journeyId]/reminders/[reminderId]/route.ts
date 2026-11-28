@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifyJourneyAccess, errorResponse, successResponse } from "@/lib/api/journey-auth";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 import type { UpdateReminderBody, ReminderUpdateResponse } from "@/lib/reminders/types";
 
 /** RFC-4122 UUID pattern — all Supabase IDs are UUIDs. */
@@ -29,6 +30,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         { status: 400 }
       );
     }
+
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
 
     // Verify auth + ownership
     const auth = await verifyJourneyAccess(journeyId);

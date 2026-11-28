@@ -2,7 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import PDFDocument from "pdfkit";
 import { type NextRequest, NextResponse } from "next/server";
-import { getAuthenticatedUser, getServiceRoleClient } from "@/lib/api/authGuards";
+import { getServiceRoleClient } from "@/lib/api/authGuards";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 import {
   buildSearchOrClause,
   isLedgerFilter,
@@ -57,10 +58,9 @@ function loadLogoBytes(): Buffer | null {
 }
 
 export async function GET(request: NextRequest) {
-  const user = await getAuthenticatedUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
-  }
+  const sessionGuard = await requireActiveSessionForRequest(request);
+  if (!sessionGuard.ok) return sessionGuard.response;
+  const { user } = sessionGuard.context;
 
   const params = request.nextUrl.searchParams;
   const rawType = params.get("type") ?? "all";

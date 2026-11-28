@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServerClient } from "@supabase/ssr";
 import { safeError } from "@/lib/api/safeError";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -12,14 +13,9 @@ export async function GET(req: NextRequest) {
   try {
     // Step 1: Verify the logged-in user from session cookie
     const supabaseAuth = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseAuth.auth.getUser();
-
-    if (authError || !user) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabaseAuth, req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     // Step 2: Use service role to query — but only for the authenticated user's ID
     const supabase = createServerClient(
@@ -61,14 +57,9 @@ export async function POST(req: NextRequest) {
   try {
     // Step 1: Verify the logged-in user from session cookie
     const supabaseAuth = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseAuth.auth.getUser();
-
-    if (authError || !user) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabaseAuth, req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     // Step 2: Parse body
     const body = await req.json();

@@ -1,17 +1,17 @@
-import { NextResponse } from "next/server";
-import { getAuthenticatedUser, getServiceRoleClient } from "@/lib/api/authGuards";
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceRoleClient } from "@/lib/api/authGuards";
 import { loadWalletState } from "@/lib/wallet/state";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 /**
  * GET /api/wallet
  * The signed-in user's credit balance and the standalone resources they can use
  * without paying (wallet unlocks + permanent legacy add-on purchases).
  */
-export async function GET() {
-  const user = await getAuthenticatedUser();
-  if (!user) {
-    return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 });
-  }
+export async function GET(request: NextRequest) {
+  const sessionGuard = await requireActiveSessionForRequest(request);
+  if (!sessionGuard.ok) return sessionGuard.response;
+  const { user } = sessionGuard.context;
 
   try {
     const state = await loadWalletState(getServiceRoleClient(), user.id);

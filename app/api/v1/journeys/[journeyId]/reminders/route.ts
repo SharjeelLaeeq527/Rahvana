@@ -13,6 +13,7 @@ import { getReminderById, type ReminderKind } from "@/lib/notifications/reminder
 import type { ReminderListResponse, ReminderType } from "@/lib/reminders/types";
 import { getJourneyHrefByType } from "@/lib/constants/routes";
 import { createClient } from "@supabase/supabase-js";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 /** RFC-4122 UUID v4 pattern — all IDs from Supabase are UUIDs. */
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -64,6 +65,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         { status: 400 }
       );
     }
+
+    const sessionGuard = await requireActiveSessionForRequest(request);
+    if (!sessionGuard.ok) return sessionGuard.response;
 
     // Verify auth + journey ownership (uses user client)
     const auth = await verifyJourneyAccess(journeyId);
