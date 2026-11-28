@@ -46,52 +46,61 @@ export function PassportPhotoHistoryModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl w-[95%] bg-background overflow-hidden rounded-2xl sm:rounded-3xl p-0 border border-slate-200/80 shadow-2xl">
-        <div className="relative w-full overflow-hidden p-5 sm:p-6">
-          {/* Header */}
-          <div className="flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-slate-100">
-            <div>
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-[#0d7377]/10 text-[#0d7377]">
-                  <Clock className="h-5 w-5" />
-                </div>
-                <div>
-                  <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <span>My Photo Album</span>
-                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#0d7377]/10 text-[#0d7377] border border-[#0d7377]/20">
-                      {history.length} {history.length === 1 ? "photo" : "photos"}
-                    </span>
-                  </DialogTitle>
-                  <DialogDescription className="text-xs text-slate-500 mt-0.5">
-                    {isJourney
-                      ? "Photos generated in this candidate journey are saved here."
-                      : "Your generated passport photos are saved here for quick preview and re-download."}
-                  </DialogDescription>
-                </div>
-              </div>
-            </div>
+      <div className="relative w-full min-w-0 overflow-hidden p-3 sm:p-6">
+        
+{/* Header */}
+<div className="flex items-start justify-between gap-2 pb-4 border-b border-slate-100">
+  {/* Title */}
+  <div className="flex min-w-0 flex-1 items-start gap-2">
+    <div className="shrink-0 rounded-xl bg-[#0d7377]/10 p-2 text-[#0d7377]">
+      <Clock className="h-5 w-5" />
+    </div>
 
-            <div className="flex items-center gap-2">
-              {history.length > 0 && (
-                <button
-                  type="button"
-                  onClick={onRequestClearAll}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer"
-                  title="Clear all saved history"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  <span>Clear All</span>
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => onOpenChange(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
-                title="Close modal"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
+    <div className="min-w-0 flex-1">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <DialogTitle className="text-base font-bold text-slate-900 sm:text-xl">
+          My Photo Album
+        </DialogTitle>
+
+        <span className="shrink-0 rounded-full border border-[#0d7377]/20 bg-[#0d7377]/10 px-2 py-0.5 text-[10px] font-semibold text-[#0d7377] sm:px-2.5 sm:text-xs">
+          {history.length} {history.length === 1 ? "photo" : "photos"}
+        </span>
+      </div>
+
+      <DialogDescription className="mt-1 text-[11px] leading-relaxed text-slate-500 sm:text-xs">
+        {isJourney
+          ? "Photos generated in this candidate journey are saved here."
+          : "Your generated passport photos are saved here for quick preview and re-download."}
+      </DialogDescription>
+    </div>
+  </div>
+
+  {/* Actions - Always stay on the same row */}
+  <div className="flex shrink-0 items-center gap-1.5">
+    {history.length > 0 && (
+      <button
+        type="button"
+        onClick={onRequestClearAll}
+        className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-rose-200 px-2 py-1.5 text-[10px] font-semibold text-rose-600 transition hover:bg-rose-50 hover:text-rose-700 sm:px-3 sm:text-xs"
+        title="Clear all saved history"
+      >
+        <RotateCcw className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+        <span>Clear All</span>
+      </button>
+    )}
+
+    <button
+      type="button"
+      onClick={() => onOpenChange(false)}
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+      title="Close modal"
+      aria-label="Close modal"
+    >
+      <X className="h-5 w-5" />
+    </button>
+  </div>
+</div>
+
 
           {/* Body */}
           <div className="mt-4">
